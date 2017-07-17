@@ -144,10 +144,13 @@ exports.activate = function (context) {
                     path.basename(inputFileName,
                         path.extname(inputFileName))) + ".html";
                 fs.writeFileSync(output, result);
-                lastFileName = output; 
+                lastFileName = inputFileName; 
                 lastContent = result;
             } //if
         } //loop
+        if (!lastFileName)
+            for (let index in debugConfiguration.testDataSet)
+                lastFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
         if (lastFileName && debugConfiguration.debugSessionOptions.showLastHTML) {
             vscode.commands.executeCommand(
                 "vscode.previewHtml",
