@@ -110,11 +110,11 @@ exports.activate = function (context) {
         });
     }; //generateConfiguration
 
-    const createMd = function (markDownPath, markdownItOptions, plugins) {
+    const createMd = function (markdownPath, markdownItOptions, plugins) {
         const rootPath = vscode.workspace.rootPath;
         const errors = []; //SA???
-        const constructor = require(markDownPath);
-        let md = new constructor();
+        const constructor = require(markdownPath);
+        const md = new constructor();
         markdownItOptions.xhtmlOut = true; //absolutely required default
         md.set(markdownItOptions);
         for (let index in plugins)
@@ -164,9 +164,14 @@ exports.activate = function (context) {
         } //if        
     }; //runMd
 
-    const startWithoutDebugging = function (starter) {
+    const getMdPath = function() {
         const extension = vscode.extensions.getExtension("Microsoft.vscode-markdown");
         if (!extension) return;
+        const extensionPath = path.join(extension.extensionPath, "node_modules");
+        return path.join(extensionPath, "markdown-it");
+    }; //getMdPath
+
+    const readConfiguration = function() {
         const fileName = getConfigurationFileName(vscode.workspace.rootPath);
         if (!fs.existsSync(fileName)) {
             generateConfiguration();
@@ -174,14 +179,20 @@ exports.activate = function (context) {
             return;
         } //if
         const json = fs.readFileSync(fileName, encoding);
-        const debugConfiguration = JSON.parse(jsonCommentStripper(json));
-        const extensionPath = path.join(extension.extensionPath, "node_modules");
-        const pathToMd = path.join(extensionPath, "markdown-it");
+        return JSON.parse(jsonCommentStripper(json));
+    }; //readConfiguration
+
+    const startWithoutDebugging = function (starter) {
+        const pathToMd = getMdPath();
+        if (!pathToMd) return;
+        const debugConfiguration = readConfiguration();
         const md = createMd(pathToMd, debugConfiguration.markdownItOptions, debugConfiguration.plugins);
         runMd(md, debugConfiguration);
     }; //startWithoutDebugging
 
     const startDebugging = function () {
+        const pathToMd = getMdPath().replace(/\\/g, '/');
+        if (!pathToMd) return;
         const launchConfiguration = {
             type: "node2",
             protocol: "auto",
@@ -190,7 +201,16 @@ exports.activate = function (context) {
             program: "${file}",
             stopOnEntry: false
         };
-        const code = "console.log(\"1\");\n\nconsole.log(\"2\");\n\nconsole.log(\"3\");\n\nconsole.log(\"4\");\n\n";
+        const debugConfiguration = readConfiguration();
+        const debugConfigurationString = jsonFormatter(
+                debugConfiguration,
+                { type: "space", size: 2 }); 
+        let code = "console.log(\"Start:\");\n\n";
+        code += util.format("const debugConfiguration = %s;\n\n", debugConfigurationString);
+        code += util.format("const constructor = require(\"%s\");\n", pathToMd);
+        code += "const md = new constructor();\n";
+        code += "debugConfiguration.xhtmlOut = true;\n\n";
+        code += "console.log(\"1\");\n\nconsole.log(\"2\");\n\nconsole.log(\"3\");\n\nconsole.log(\"4\");\n\n";
         if (!vscode.workspace.tmpDir)
             vscode.workspace.tmpDir = tmp.dirSync({ prefix: "vscode.markdown-debugging-", postfix: "tmp.js"});
         const dirName = vscode.workspace.tmpDir.name;
