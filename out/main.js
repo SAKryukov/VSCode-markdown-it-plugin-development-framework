@@ -62,10 +62,7 @@ exports.activate = function (context) {
         testDataSet: [],
         debugSessionOptions: {
             saveHtmlFiles: true,
-            showLastHTML: true,
-            createErrorLog: true,
-            errorLogFile: "errors.log",
-            showErrorLog: true
+            showLastHTML: true
         }
     }; //defaultConfiguration
 
@@ -222,19 +219,21 @@ exports.activate = function (context) {
         if (!vscode.workspace.tmpDir)
             vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: "tmp.js" });
         const dirName = vscode.workspace.tmpDir.name;
+        const htmlFileName = path.join(dirName, "last.html");
+        // try {
+        //     //fs.
+        // } catch (ex) {}
         launchConfiguration.program = path.join(dirName, "driver.js");
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
-        // .then(function () {
-        //     if (debugConfiguration.debugSessionOptions.showLastHTML) {
-        //         vscode.workspace.lastContent = fs.readFileSync(path.join(vscode.workspace.tmpDir.name, "last.html"), encoding);
-        //         vscode.commands.executeCommand(
-        //             "vscode.previewHtml",
-        //             previewUri,
-        //             vscode.ViewColumn.One,
-        //             util.format("Preview \"%s\"", "Ha!"));
-        //     } //if options...
-        //});
+        fs.watch(vscode.workspace.tmpDir.name, function (event, fileName) {
+            vscode.workspace.lastContent = fs.readFileSync(path.join(dirName, "last.html"), encoding);
+            vscode.commands.executeCommand(
+                "vscode.previewHtml",
+                previewUri,
+                vscode.ViewColumn.One,
+                util.format("Preview \"%s\"", "Ha!"));
+        });
     }; //startDebugging
 
     vscode.workspace.onDidChangeConfiguration(function (e) {
