@@ -205,6 +205,7 @@ exports.activate = function (context) {
             protocol: "auto"
         };
         const debugConfiguration = readConfiguration();
+        if (!debugConfiguration) return;
         const debugConfigurationString = jsonFormatter(
                 debugConfiguration,
                 { type: "space", size: 2 });
