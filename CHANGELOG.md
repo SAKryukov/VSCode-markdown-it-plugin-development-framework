@@ -2,7 +2,7 @@
 
 ## Version 0.2.0
 
-Fixed the problem when there is no debugging configuration when debugging is started
+* Fixed the problem when there is no debugging configuration when debugging is started
 
 ## Version 0.1.0
 
