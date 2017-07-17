@@ -1,0 +1,21 @@
+{
+    "name": "markdown-it-plugin-first",
+    "displayName": "Markdown-it plugin #1",
+    "main": "plugin.js",
+    "description": "",
+    "version": "0.0.1",
+    "publisher": "sakryukov",
+    "author": {
+        "name": "Sergey A Kryukov",
+        "url": "http://www.SAKryukov.org"
+    },
+    "engines": {
+        "vscode": "^1.13.1"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "markdown"
+    ]
+}

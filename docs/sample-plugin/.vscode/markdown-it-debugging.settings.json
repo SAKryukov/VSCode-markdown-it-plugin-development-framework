@@ -1,0 +1,30 @@
+{
+    "markDownItOptions": {
+        
+    },
+    "plugins": [
+        {
+            "path": "plugins\\p1",
+            "options": {
+                
+            }
+        },
+        {
+            "path": "plugins\\p2",
+            "options": {
+                
+            }
+        }
+    ],
+    "testDataSet": [
+        "sample.md",
+        "secondSample.md"
+    ],
+    "options": {
+        "saveHtmlFiles": true,
+        "showLastHTML": true,
+        "createErrorLog": true,
+        "errorLogFile": "errors.log",
+        "showErrorLog": true
+    }
+}

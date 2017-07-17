@@ -1,0 +1,85 @@
+{
+    "name": "markdown-it-plugin-development-framework",
+    "displayName": "Markdown-it plugin development framework",
+    "description": "Framework for development of node.js modules used as plug-ins for markdown-it module",
+    "version": "0.0.1",
+    "publisher": "sakryukov",
+    "author": {
+        "name": "Sergey A Kryukov",
+        "url": "http://www.SAKryukov.org"
+    },
+    "license": "MIT",
+    "icon": "images/logo.png",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/SAKryukov/markdown-it-plugin-development-framework.git"
+    },
+    "engines": {
+        "vscode": "^1.13.1"
+    },
+    "categories": [
+        "Other"
+    ],
+    "keywords": [
+        "markdown"
+    ],
+    "activationEvents": [
+        "onLanguage:javascript",
+        "onLanguage:markdown"
+    ],
+    "main": "./out/main.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "markdown.pluginDevelopment.start",
+                "title": "Start Markdown Plug-in Debugging",
+                "icon": "./images/run.svg"
+            },
+            {
+                "command": "markdown.pluginDevelopment.generateDebugConfiguration",
+                "title": "Create Markdown Extension Debug Configuration"
+            }
+        ],
+        "menus": {
+            "editor/context": [
+                {
+                    "command": "markdown.pluginDevelopment.start",
+                    "group": "debug markdown"
+                },
+                {
+                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
+                    "group": "debug markdown"
+                }
+            ],
+            "editor/title": [
+                {
+                    "command": "markdown.pluginDevelopment.start",
+                    "group": "navigation"
+                } 
+            ]            
+        }
+    },
+    "configuration": {},
+    "configurationDefaults": {
+        "[markdown]": {
+            "editor.codeLens": true,
+            "editor.folding": false,
+            "editor.lineNumbers": "off",
+            "editor.wordWrap": "on"
+        }
+    },
+    "dependencies": {
+        "vscode": "^1.14.0"
+    },
+    "devDependencies": {
+        "vscode": "^1.14.0"
+    },
+    "extensionDependencies": [
+        "Microsoft.vscode-markdown"
+    ],
+    "__metadata": {
+        "id": "4161cde5-9dfa-4445-9258-13c05c39fd30",
+        "publisherId": "d1ee7a62-4a9b-4f51-94ff-cb9d0dc5a6c9",
+        "publisherDisplayName": "Sergey A Kryukov"
+    }
+}
