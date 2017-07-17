@@ -14,8 +14,31 @@ exports.activate = function (context) {
     const util = require('util');
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
     const jsonFormatter = require("./node_modules/json-format");
-    const markdownId = "markdown";
-    const jsId = "javascript";
+
+    const previewAuthority = "markdown-debug-preview";
+    const previewUri =
+        vscode.Uri.parse(util.format("%s://authority/%s", previewAuthority, previewAuthority));
+    
+    let lastContent;
+
+    const TextDocumentContentProvider = (function () {
+        function TextDocumentContentProvider() {
+            this.changeSourceHandler = new vscode.EventEmitter();
+        } //TextDocumentContentProvider
+        TextDocumentContentProvider.prototype.provideTextDocumentContent = function (uri) {
+            if (lastContent)
+                return lastContent;
+        }; //TextDocumentContentProvider.prototype.provideTextDocumentContent
+        Object.defineProperty(TextDocumentContentProvider.prototype, "onDidChange", {
+            get: function () { return this.changeSourceHandler.event; }, enumerable: true, configurable: true
+        });
+        TextDocumentContentProvider.prototype.update = function (uri) {
+            this.changeSourceHandler.fire(uri);
+        }; //TextDocumentContentProvider.prototype.update
+        return TextDocumentContentProvider;
+    }()); //TextDocumentContentProvider
+    const provider = new TextDocumentContentProvider();
+    const registration = vscode.workspace.registerTextDocumentContentProvider(previewAuthority, provider);
 
     const getConfigurationFileName = function (rootPath) {
         return path.join(rootPath, ".vscode", "markdown-it-debugging.settings.json");
@@ -104,7 +127,9 @@ exports.activate = function (context) {
 
     const htmlTemplateSet = semantic.getHtmlTemplateSet(path, fs, encoding);
     const runMd = function (md, debugConfiguration) {
+        lastContent = undefined;
         const rootPath = vscode.workspace.rootPath;
+        let lastFileName;
         for (let index in debugConfiguration.testDataSet) {
             const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
             let result = md.render(fs.readFileSync(inputFileName, encoding));
@@ -119,8 +144,17 @@ exports.activate = function (context) {
                     path.basename(inputFileName,
                         path.extname(inputFileName))) + ".html";
                 fs.writeFileSync(output, result);
+                lastFileName = output; 
+                lastContent = result;
             } //if
         } //loop
+        if (lastFileName && debugConfiguration.debugSessionOptions.showLastHTML) {
+            vscode.commands.executeCommand(
+                "vscode.previewHtml",
+                previewUri,
+                vscode.ViewColumn.One,
+                util.format("Preview '%s'", path.basename(lastFileName)));
+        } //if        
     }; //runMd
 
     const startDebugging = function (starter) {

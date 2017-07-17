@@ -1,6 +1,10 @@
 {
-    "markDownItOptions": {
-        
+    "markdownItOptions": {
+        "html": true,
+        "linkify": false,
+        "breaks": false,
+        "typographer": true,
+        "quotes": "\"\"''"
     },
     "plugins": [
         {
@@ -20,7 +24,7 @@
         "sample.md",
         "secondSample.md"
     ],
-    "options": {
+    "debugSessionOptions": {
         "saveHtmlFiles": true,
         "showLastHTML": true,
         "createErrorLog": true,
