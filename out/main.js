@@ -4,10 +4,12 @@ exports.activate = function (context) {
 
     const encoding = "utf8";
     const Utf8BOM = "\ufeff";
+    const defaultSmartQuotes = '""' + "''";
 
     const vscode = require('vscode');
     const path = require('path');
     const fs = require('fs');
+    const semantic = require('./semantic');
 
     const util = require('util');
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
@@ -20,10 +22,16 @@ exports.activate = function (context) {
     }; //getConfigurationFileName
 
     const defaultConfiguration = {
-        markDownItOptions: {},
+        markdownItOptions: {
+            html: true,
+            linkify: false,
+            breaks: false,
+            typographer: true,
+            quotes: defaultSmartQuotes
+        },
         plugins: [],
         testDataSet: [],
-        options: {
+        debugSessionOptions: {
             saveHtmlFiles: true,
             showLastHTML: true,
             createErrorLog: true,
@@ -81,6 +89,7 @@ exports.activate = function (context) {
         const errors = []; //SA???
         const constructor = require(markDownPath);
         let md = new constructor();
+        markdownItOptions.xhtmlOut = true; //absolutely required default
         md.set(markdownItOptions);
         for (let index in plugins)
             try {
@@ -93,13 +102,14 @@ exports.activate = function (context) {
         return md;
     }; //createMd
 
+    const htmlTemplateSet = semantic.getHtmlTemplateSet(path, fs, encoding);
     const runMd = function (md, debugConfiguration) {
         const rootPath = vscode.workspace.rootPath;
         for (let index in debugConfiguration.testDataSet) {
             const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
             let result = md.render(fs.readFileSync(inputFileName, encoding));
             console.log(result);
-            if (debugConfiguration.options.saveHtmlFiles) {
+            if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
                 // const effectiveOutputPath = outputPath ?
                 //     path.join(vscode.workspace.rootPath, outputPath) : path.dirname(fileName);
                 const effectiveOutputPath = path.dirname(inputFileName);

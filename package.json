@@ -45,10 +45,6 @@
                 {
                     "command": "markdown.pluginDevelopment.start",
                     "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
-                    "group": "debug markdown"
                 }
             ],
             "editor/title": [
