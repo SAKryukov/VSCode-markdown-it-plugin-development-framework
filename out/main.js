@@ -43,7 +43,11 @@ exports.activate = function (context) {
     const getConfigurationFileName = function (rootPath) {
         if (!vscode.workspace.settings)
             vscode.workspace.settings = semantic.getSettings(importContext);
-        return path.join(rootPath, ".vscode", vscode.workspace.settings.debugConfigurationFileName);
+        const dirName = path.join(rootPath, ".vscode");
+        try {
+            fs.mkdirSync(dirName);
+        } catch (ex) { }
+        return path.join(dirName, vscode.workspace.settings.debugConfigurationFileName);
     }; //getConfigurationFileName
 
     const defaultConfiguration = {

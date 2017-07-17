@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.3.0
+
+* Fixed the problem when there is no .vscode directory when debugging is started
+
 ## Version 0.2.0
 
 * Fixed the problem when there is no debugging configuration when debugging is started
