@@ -8,8 +8,6 @@
 
 * Fixed the problem when there is no debugging configuration when debugging is started
 
-TODO: consider the case when .vscode is not created. Create it
-
 ## Version 0.1.0
 
 * Pre-release to Visual Studio Marketplace
