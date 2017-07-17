@@ -53,23 +53,32 @@
                 {
                     "command": "markdown.pluginDevelopment.startDebugging",
                     "group": "debug markdown"
-                }               
+                }
             ],
             "editor/title": [
                 {
                     "command": "markdown.pluginDevelopment.startDebugging",
                     "group": "navigation"
-                } 
-            ]            
-        }
-    },
-    "configuration": {},
-    "configurationDefaults": {
-        "[markdown]": {
-            "editor.codeLens": true,
-            "editor.folding": false,
-            "editor.lineNumbers": "off",
-            "editor.wordWrap": "on"
+                }
+            ]
+        },
+        "configuration": {
+            "type": "object",
+            "title": "Markdown-it plugin development framework configuration",
+            "properties": {
+                "markdown.extension.pluginDevelopment.debugConfigurationFileName": {
+                    "type": "string",
+                    "default": "markdown-it-debugging.settings.json"
+                }
+            }
+        },
+        "configurationDefaults": {
+            "[markdown]": {
+                "editor.codeLens": true,
+                "editor.folding": false,
+                "editor.lineNumbers": "off",
+                "editor.wordWrap": "on"
+            }
         }
     },
     "dependencies": {

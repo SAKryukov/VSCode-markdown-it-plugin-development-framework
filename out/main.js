@@ -9,9 +9,10 @@ exports.activate = function (context) {
     const vscode = require("vscode");
     const path = require("path");
     const fs = require("fs");
+    const util = require("util");
+    const importContext = { vscode: vscode, util: util, fs: fs, path: path };    
     const semantic = require("./semantic");
 
-    const util = require("util");
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
     const jsonFormatter = require("./node_modules/json-format");
     const tmp = require("./node_modules/tmp");
@@ -40,7 +41,9 @@ exports.activate = function (context) {
     const registration = vscode.workspace.registerTextDocumentContentProvider(previewAuthority, provider);
 
     const getConfigurationFileName = function (rootPath) {
-        return path.join(rootPath, ".vscode", "markdown-it-debugging.settings.json");
+        if (!vscode.workspace.settings)
+            vscode.workspace.settings = semantic.getSettings(importContext);
+        return path.join(rootPath, ".vscode", vscode.workspace.settings.debugConfigurationFileName);
     }; //getConfigurationFileName
 
     const defaultConfiguration = {
@@ -128,7 +131,7 @@ exports.activate = function (context) {
         return md;
     }; //createMd
 
-    const htmlTemplateSet = semantic.getHtmlTemplateSet(path, fs, encoding);
+    const templateSet = semantic.getTemplateSet(path, fs, encoding);
     const runMd = function (md, debugConfiguration) {
         vscode.workspace.lastContent = undefined;
         const rootPath = vscode.workspace.rootPath;
@@ -195,7 +198,7 @@ exports.activate = function (context) {
         if (!pathToMd) return;
         const rootPath = vscode.workspace.rootPath;
         const launchConfiguration = {
-            type: "node2",
+            type: "node2", // a real 
             protocol: "auto",
             request: "launch",
             name: "Launch Extension",
@@ -205,30 +208,12 @@ exports.activate = function (context) {
         const debugConfiguration = readConfiguration();
         const debugConfigurationString = jsonFormatter(
                 debugConfiguration,
-                { type: "space", size: 2 }); 
-        let code = "console.log(\"Start:\");\n\n";
-        code += "const path = require(\"path\");\n";
-        code += "const fs = require(\"fs\");\n\n";
-        code += util.format("const debugConfiguration = %s;\n\n", debugConfigurationString);
-        code += util.format("const constructor = require(\"%s\");\n", pathToMd);
-        code += "const md = new constructor();\n";
-        code += "debugConfiguration.xhtmlOut = true;\n\n";
-        code += util.format("const rootPath = \"%s\"\n\n", rootPath).replace(/\\/g, '/');
-        code += "const plugins = debugConfiguration.plugins;\n";
-        code += "for (let index in plugins)\n";
-        code += "    try {\n";
-        code += "        const pluginPath = path.join(rootPath, plugins[index].path);\n";
-        code += "        const plugin = require(pluginPath);\n";
-        code += "        md.use(plugin, plugins[index].options);\n";
-        code += "    } catch (ex) {\n";
-        code += "        console.log(ex.toString());\n";
-        code += "    } //exception\n\n";
-        code += "for (let index in debugConfiguration.testDataSet) {\n";
-        code += "    const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);\n";
-        code += "    let result = md.render(fs.readFileSync(inputFileName, 'utf8'));\n";
-        code += "}\n\n";
-        code += "console.log(\"1\");\n\nconsole.log(\"2\");\n\nconsole.log(\"3\");\n\nconsole.log(\"4\");\n\n";
-        code += "console.log(\"Debugging complete\")\n\n";
+                { type: "space", size: 2 });
+        const code = util.format(
+            templateSet.driver,
+            debugConfigurationString,
+            pathToMd.replace(/\\/g, '/'),
+            rootPath.replace(/\\/g, '/'));
         if (!vscode.workspace.tmpDir)
             vscode.workspace.tmpDir = tmp.dirSync({ prefix: "vscode.markdown-debugging-", postfix: "tmp.js"});
         const dirName = vscode.workspace.tmpDir.name;

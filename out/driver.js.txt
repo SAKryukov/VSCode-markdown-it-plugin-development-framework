@@ -1,0 +1,27 @@
+const path = require("path");
+const fs = require("fs");
+
+const debugConfiguration = %s;
+
+const constructor = require("%s");
+const md = new constructor();
+debugConfiguration.xhtmlOut = true;
+
+const rootPath = "%s";
+
+const plugins = debugConfiguration.plugins;
+for (let index in plugins)
+    try {
+        const pluginPath = path.join(rootPath, plugins[index].path);
+        const plugin = require(pluginPath);
+        md.use(plugin, plugins[index].options);
+    } catch (ex) {
+        console.log(ex.toString());
+    } //exception
+
+for (let index in debugConfiguration.testDataSet) {
+    const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
+    let result = md.render(fs.readFileSync(inputFileName, 'utf8'));
+}
+
+console.log("Debugging complete")

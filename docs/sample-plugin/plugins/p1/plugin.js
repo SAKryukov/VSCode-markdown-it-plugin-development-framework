@@ -1,5 +1,5 @@
 "use strict";
-debugger;
+//debugger;
 
 const defaultOptions = {
 }; //defaultOptions
