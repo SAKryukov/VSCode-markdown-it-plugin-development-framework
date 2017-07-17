@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 0.4.0
+
+* Restored creation of files under the debugger and removal of temporary directory
+
 ## Version 0.3.0
 
 * Fixed the problem when there is no .vscode directory when debugging is started

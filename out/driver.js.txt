@@ -1,6 +1,8 @@
 const path = require("path");
 const fs = require("fs");
 
+const Utf8BOM = "\ufeff";
+
 const debugConfiguration = %s;
 
 const constructor = require("%s");
@@ -19,9 +21,28 @@ for (let index in plugins)
         console.log(ex.toString());
     } //exception
 
+let lastContent;
+
 for (let index in debugConfiguration.testDataSet) {
     const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
     let result = md.render(fs.readFileSync(inputFileName, 'utf8'));
-}
+    if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
+        // const effectiveOutputPath = outputPath ?
+        //     path.join(vscode.workspace.rootPath, outputPath) : path.dirname(fileName);
+        const effectiveOutputPath = path.dirname(inputFileName);
+        result = Utf8BOM + result;
+        const output = path.join(
+            effectiveOutputPath,
+            path.basename(inputFileName,
+                path.extname(inputFileName))) + ".html";
+        fs.writeFileSync(output, result);
+        lastContent = result;
+    } //if
+} //loop
+
+if (lastContent && debugConfiguration.debugSessionOptions.showLastHTML) {
+    const output = path.join(__dirname, "last.html");
+    fs.writeFileSync(output, lastContent);
+} //if
 
 console.log("Debugging complete")

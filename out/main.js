@@ -10,7 +10,7 @@ exports.activate = function (context) {
     const path = require("path");
     const fs = require("fs");
     const util = require("util");
-    const importContext = { vscode: vscode, util: util, fs: fs, path: path };    
+    const importContext = { vscode: vscode, util: util, fs: fs, path: path };
     const semantic = require("./semantic");
 
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
@@ -171,14 +171,14 @@ exports.activate = function (context) {
         } //if        
     }; //runMd
 
-    const getMdPath = function() {
+    const getMdPath = function () {
         const extension = vscode.extensions.getExtension("Microsoft.vscode-markdown");
         if (!extension) return;
         const extensionPath = path.join(extension.extensionPath, "node_modules");
         return path.join(extensionPath, "markdown-it");
     }; //getMdPath
 
-    const readConfiguration = function() {
+    const readConfiguration = function () {
         const fileName = getConfigurationFileName(vscode.workspace.rootPath);
         if (!fs.existsSync(fileName)) {
             generateConfiguration();
@@ -211,25 +211,36 @@ exports.activate = function (context) {
         const debugConfiguration = readConfiguration();
         if (!debugConfiguration) return;
         const debugConfigurationString = jsonFormatter(
-                debugConfiguration,
-                { type: "space", size: 2 });
+            debugConfiguration,
+            { type: "space", size: 2 });
+        const semanticPath = path.join(__dirname, "semantic.js");
         const code = util.format(
             templateSet.driver,
             debugConfigurationString,
             pathToMd.replace(/\\/g, '/'),
             rootPath.replace(/\\/g, '/'));
         if (!vscode.workspace.tmpDir)
-            vscode.workspace.tmpDir = tmp.dirSync({ prefix: "vscode.markdown-debugging-", postfix: "tmp.js"});
+            vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: "tmp.js" });
         const dirName = vscode.workspace.tmpDir.name;
         launchConfiguration.program = path.join(dirName, "driver.js");
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
+        // .then(function () {
+        //     if (debugConfiguration.debugSessionOptions.showLastHTML) {
+        //         vscode.workspace.lastContent = fs.readFileSync(path.join(vscode.workspace.tmpDir.name, "last.html"), encoding);
+        //         vscode.commands.executeCommand(
+        //             "vscode.previewHtml",
+        //             previewUri,
+        //             vscode.ViewColumn.One,
+        //             util.format("Preview \"%s\"", "Ha!"));
+        //     } //if options...
+        //});
     }; //startDebugging
 
     vscode.workspace.onDidChangeConfiguration(function (e) {
         vscode.workspace.settings = undefined;
     }); //vscode.workspace.onDidChangeConfiguration
-    
+
     context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startWithoutDebugging", function () {
             startWithoutDebugging();
