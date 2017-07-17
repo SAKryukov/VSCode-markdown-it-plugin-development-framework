@@ -193,6 +193,7 @@ exports.activate = function (context) {
     const startDebugging = function () {
         const pathToMd = getMdPath().replace(/\\/g, '/');
         if (!pathToMd) return;
+        const rootPath = vscode.workspace.rootPath;
         const launchConfiguration = {
             type: "node2",
             protocol: "auto",
@@ -206,11 +207,28 @@ exports.activate = function (context) {
                 debugConfiguration,
                 { type: "space", size: 2 }); 
         let code = "console.log(\"Start:\");\n\n";
+        code += "const path = require(\"path\");\n";
+        code += "const fs = require(\"fs\");\n\n";
         code += util.format("const debugConfiguration = %s;\n\n", debugConfigurationString);
         code += util.format("const constructor = require(\"%s\");\n", pathToMd);
         code += "const md = new constructor();\n";
         code += "debugConfiguration.xhtmlOut = true;\n\n";
+        code += util.format("const rootPath = \"%s\"\n\n", rootPath).replace(/\\/g, '/');
+        code += "const plugins = debugConfiguration.plugins;\n";
+        code += "for (let index in plugins)\n";
+        code += "    try {\n";
+        code += "        const pluginPath = path.join(rootPath, plugins[index].path);\n";
+        code += "        const plugin = require(pluginPath);\n";
+        code += "        md.use(plugin, plugins[index].options);\n";
+        code += "    } catch (ex) {\n";
+        code += "        console.log(ex.toString());\n";
+        code += "    } //exception\n\n";
+        code += "for (let index in debugConfiguration.testDataSet) {\n";
+        code += "    const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);\n";
+        code += "    let result = md.render(fs.readFileSync(inputFileName, 'utf8'));\n";
+        code += "}\n\n";
         code += "console.log(\"1\");\n\nconsole.log(\"2\");\n\nconsole.log(\"3\");\n\nconsole.log(\"4\");\n\n";
+        code += "console.log(\"Debugging complete\")\n\n";
         if (!vscode.workspace.tmpDir)
             vscode.workspace.tmpDir = tmp.dirSync({ prefix: "vscode.markdown-debugging-", postfix: "tmp.js"});
         const dirName = vscode.workspace.tmpDir.name;
