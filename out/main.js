@@ -222,6 +222,10 @@ exports.activate = function (context) {
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
     }; //startDebugging
 
+    vscode.workspace.onDidChangeConfiguration(function (e) {
+        vscode.workspace.settings = undefined;
+    }); //vscode.workspace.onDidChangeConfiguration
+    
     context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startWithoutDebugging", function () {
             startWithoutDebugging();
