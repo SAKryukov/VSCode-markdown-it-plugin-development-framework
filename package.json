@@ -2,7 +2,7 @@
     "name": "markdown-it-plugin-development-framework",
     "displayName": "Markdown-it plugin development framework",
     "description": "Framework for development of node.js modules used as plug-ins for markdown-it module",
-    "version": "0.1.0",
+    "version": "0.2.0",
     "publisher": "sakryukov",
     "author": {
         "name": "Sergey A Kryukov",
