@@ -24,8 +24,7 @@
         "markdown"
     ],
     "activationEvents": [
-        "onLanguage:javascript",
-        "onLanguage:markdown"
+        "*"
     ],
     "main": "./out/main.js",
     "contributes": {
