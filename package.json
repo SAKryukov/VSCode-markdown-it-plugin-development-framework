@@ -30,7 +30,12 @@
     "contributes": {
         "commands": [
             {
-                "command": "markdown.pluginDevelopment.start",
+                "command": "markdown.pluginDevelopment.startWithoutDebugging",
+                "title": "Start Markdown Plug-in Without Debugging",
+                "icon": "./images/run.svg"
+            },
+            {
+                "command": "markdown.pluginDevelopment.startDebugging",
                 "title": "Start Markdown Plug-in Debugging",
                 "icon": "./images/run.svg"
             },
@@ -42,13 +47,17 @@
         "menus": {
             "editor/context": [
                 {
-                    "command": "markdown.pluginDevelopment.start",
+                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
                     "group": "debug markdown"
-                }
+                },
+                {
+                    "command": "markdown.pluginDevelopment.startDebugging",
+                    "group": "debug markdown"
+                }               
             ],
             "editor/title": [
                 {
-                    "command": "markdown.pluginDevelopment.start",
+                    "command": "markdown.pluginDevelopment.startDebugging",
                     "group": "navigation"
                 } 
             ]            
