@@ -1,5 +1,7 @@
 "use strict";
 
+let tmpDir;
+
 exports.activate = function (context) {
 
     const encoding = "utf8";
@@ -14,6 +16,7 @@ exports.activate = function (context) {
     const util = require('util');
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
     const jsonFormatter = require("./node_modules/json-format");
+    const tmp = require("./node_modules/tmp");
 
     const previewAuthority = "markdown-debug-preview";
     const previewUri =
@@ -189,4 +192,7 @@ exports.activate = function (context) {
 
 }; //exports.activate
 
-exports.deactivate = function deactivate() { }
+exports.deactivate = function deactivate() {
+    if (tmpDir)
+        tmpDir.removeCallback();
+}; //exports.deactivate
