@@ -220,19 +220,21 @@ exports.activate = function (context) {
             vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: "tmp.js" });
         const dirName = vscode.workspace.tmpDir.name;
         const htmlFileName = path.join(dirName, "last.html");
-        // try {
-        //     //fs.
-        // } catch (ex) {}
+        try {
+            fs.unlinkSync(htmlFileName);
+        } catch (ex) { }
         launchConfiguration.program = path.join(dirName, "driver.js");
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
         fs.watch(vscode.workspace.tmpDir.name, function (event, fileName) {
-            vscode.workspace.lastContent = fs.readFileSync(path.join(dirName, "last.html"), encoding);
-            vscode.commands.executeCommand(
-                "vscode.previewHtml",
-                previewUri,
-                vscode.ViewColumn.One,
-                util.format("Preview \"%s\"", "Ha!"));
+            if (path.basename(htmlFileName).toLowerCase() == path.basename(fileName).toLowerCase()) {
+                vscode.workspace.lastContent = fs.readFileSync(htmlFileName, encoding);
+                vscode.commands.executeCommand(
+                    "vscode.previewHtml",
+                    previewUri,
+                    vscode.ViewColumn.One,
+                    util.format("Preview \"%s\"", "Ha!"));
+            } //if
         });
     }; //startDebugging
 
