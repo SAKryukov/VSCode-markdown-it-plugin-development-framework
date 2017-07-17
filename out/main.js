@@ -198,12 +198,11 @@ exports.activate = function (context) {
         if (!pathToMd) return;
         const rootPath = vscode.workspace.rootPath;
         const launchConfiguration = {
-            type: "node2", // a real 
-            protocol: "auto",
-            request: "launch",
+            type: "node2", // a real confusion! found by tracing Visual Studio Code
             name: "Launch Extension",
-            program: "${file}",
-            stopOnEntry: false
+            request: "launch",
+            stopOnEntry: false,
+            protocol: "auto"
         };
         const debugConfiguration = readConfiguration();
         const debugConfigurationString = jsonFormatter(
