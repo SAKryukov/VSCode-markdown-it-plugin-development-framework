@@ -11,7 +11,6 @@ exports.activate = function (context) {
     const path = require("path");
     const fs = require("fs");
     const util = require("util");
-    const importContext = { vscode: vscode, util: util, fs: fs, path: path };
     const semantic = require("./semantic");
 
     const jsonCommentStripper = require("./node_modules/strip-json-comments");
@@ -21,6 +20,7 @@ exports.activate = function (context) {
     const setWorspaceGlobal = (function () {
         console.assert(!vscode.workspace.hasOwnProperty("env"), "vscode.workspace.env property already exists");
         vscode.workspace.env = {};
+        vscode.workspace.env.importContext = { vscode: vscode, util: util, fs: fs, path: path };
         vscode.workspace.env.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
         vscode.workspace.env.doWatch = true;
         vscode.workspace.env.previewAuthority = "markdown-debug-preview";
@@ -48,29 +48,13 @@ exports.activate = function (context) {
 
     const getConfigurationFileName = function (rootPath) {
         if (!vscode.workspace.settings)
-            vscode.workspace.settings = semantic.getSettings(importContext);
+            vscode.workspace.settings = semantic.getSettings(vscode.workspace.env.importContext);
         const dirName = path.join(rootPath, ".vscode");
         try {
             fs.mkdirSync(dirName);
         } catch (ex) { }
         return path.join(dirName, vscode.workspace.settings.debugConfigurationFileName);
     }; //getConfigurationFileName
-
-    const defaultConfiguration = {
-        markdownItOptions: {
-            html: true,
-            linkify: false,
-            breaks: false,
-            typographer: true,
-            quotes: defaultSmartQuotes
-        },
-        plugins: [],
-        testDataSet: [],
-        debugSessionOptions: {
-            saveHtmlFiles: true,
-            showLastHTML: true
-        }
-    }; //defaultConfiguration
 
     const collectFiles = function (action) {
         const rootPath = vscode.workspace.rootPath;
@@ -93,12 +77,32 @@ exports.activate = function (context) {
     }; //collectFiles
 
     const generateConfiguration = function () {
+        const configuration = {
+            markdownItOptions: {
+                html: true,
+                linkify: false,
+                breaks: false,
+                typographer: true,
+                quotes: defaultSmartQuotes
+            },
+            plugins: [
+                // {
+                //     "enabled": true,
+                //     "path": "plugins/plugin", // the direcotory where package.json is
+                //     "options": {}
+                // },  //...
+            ],
+            testDataSet: [],
+            debugSessionOptions: {
+                saveHtmlFiles: true,
+                showLastHTML: true
+            }
+        }; //defaultConfiguration
         const rootPath = vscode.workspace.rootPath;
         if (!rootPath) {
             vscode.window.showWarningMessage("Markdown debugging requires open folder and workspace");
             return;
         } //if
-        const configuration = defaultConfiguration;
         configuration.plugins = [];
         configuration.testDataSet = [];
         collectFiles(function (markdownFiles, plugins) {
@@ -164,7 +168,7 @@ exports.activate = function (context) {
     const startWithoutDebugging = function () {
         const debugHost = require("./debugHost");
         debugHost.start(
-            importContext,
+            vscode.workspace.env.importContext,
             readConfiguration(),
             getMdPath(),
             vscode.workspace.rootPath
