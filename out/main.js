@@ -176,9 +176,19 @@ exports.activate = function (context) {
     }; //startWithoutDebugging
 
     const startDebugging = function () {
-        const pathToMd = semantic.unifyFileString(getMdPath());
+        const pathToMd = semantic.unifyFileString(semantic.unifyFileString(getMdPath()));
         if (!pathToMd) return;
-        const rootPath = vscode.workspace.rootPath;
+        const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);
+        const debugConfiguration = readConfiguration();
+        if (!debugConfiguration) return;
+        const debugConfigurationString = JSON.stringify(debugConfiguration);
+        const dirName = semantic.unifyFileString(vscode.workspace.env.tmpDir.name);
+        const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
+        const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));            
+        const hostPath = semantic.unifyFileString(path.join(__dirname, "debugHost"));
+        let code = util.format("const host = require(\"%s\");\n", hostPath);
+        code += util.format("host.start(\n\tnull, \n\t'%s', \n\t\"%s\", \n\t\"%s\", \n\t\"%s\", \n\t\"%s\");",
+            debugConfigurationString, pathToMd, rootPath, htmlFileName, lastFileFileName);
         const launchConfiguration = {
             type: "node2", // a real confusion! found by tracing Visual Studio Code
             name: "Launch Extension",
@@ -186,22 +196,8 @@ exports.activate = function (context) {
             stopOnEntry: false,
             protocol: "auto"
         };
-        const debugConfiguration = readConfiguration();
-        if (!debugConfiguration) return;
-        const debugConfigurationString = jsonFormatter(
-            debugConfiguration,
-            { type: "space", size: 2 });
-        const dirName = vscode.workspace.env.tmpDir.name;
-        const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
-        const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
-        const code = util.format(
-            templateSet.driver,
-            debugConfigurationString,
-            semantic.unifyFileString(pathToMd),
-            semantic.unifyFileString(rootPath),
-            htmlFileName,
-            lastFileFileName);
-        launchConfiguration.program = path.join(dirName, "driver.js");
+        const programName = path.join(dirName, "driver.js");
+        launchConfiguration.program = programName; 
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
         const watchCompleted = { content: undefined, fileName: undefined };
