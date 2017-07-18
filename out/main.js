@@ -78,6 +78,7 @@ exports.activate = function (context) {
                         path.relative(rootPath, markdownFiles[index].fsPath));
                 for (let index = 0; index < packageFiles.length; ++index)
                     plugins.push({
+                        enabled: true,
                         path: path.relative(rootPath, path.dirname(packageFiles[index].fsPath)),
                         options: {}
                     });
