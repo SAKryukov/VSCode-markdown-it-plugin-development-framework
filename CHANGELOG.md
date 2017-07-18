@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.5.0
+
+* Fixed repository URL
+* Plug-ins "enabled" is taken into account
+* Fixed title of preview
+* Preview of the debugged output implemented
+
 ## Version 0.4.0
 
 * Restored creation of files under the debugger and removal of temporary directory
