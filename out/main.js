@@ -138,40 +138,6 @@ exports.activate = function (context) {
     }; //createMd
 
     const templateSet = semantic.getTemplateSet(path, fs, encoding);
-    const runMd = function (md, debugConfiguration) {
-        vscode.workspace.lastContent = undefined;
-        const rootPath = vscode.workspace.rootPath;
-        let lastFileName;
-        for (let index in debugConfiguration.testDataSet) {
-            const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
-            let result = md.render(fs.readFileSync(inputFileName, encoding));
-            console.log(result);
-            if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
-                // const effectiveOutputPath = outputPath ?
-                //     path.join(vscode.workspace.rootPath, outputPath) : path.dirname(fileName);
-                const effectiveOutputPath = path.dirname(inputFileName);
-                result = Utf8BOM + result;
-                const output = path.join(
-                    effectiveOutputPath,
-                    path.basename(inputFileName,
-                        path.extname(inputFileName))) + ".html";
-                fs.writeFileSync(output, result);
-                lastFileName = inputFileName;
-                vscode.workspace.lastContent = result;
-            } //if
-        } //loop
-        if (debugConfiguration.testDataSet.length < 1) return;
-        if (!lastFileName)
-            for (let index in debugConfiguration.testDataSet)
-                lastFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
-        if (lastFileName && debugConfiguration.debugSessionOptions.showLastHTML) {
-            vscode.commands.executeCommand(
-                "vscode.previewHtml",
-                previewUri,
-                vscode.ViewColumn.One,
-                util.format(formatProcessed, path.basename(lastFileName)));
-        } //if        
-    }; //runMd
 
     const getMdPath = function () {
         const extension = vscode.extensions.getExtension("Microsoft.vscode-markdown");
@@ -191,12 +157,15 @@ exports.activate = function (context) {
         return JSON.parse(jsonCommentStripper(json));
     }; //readConfiguration
 
-    const startWithoutDebugging = function (starter) {
-        const pathToMd = getMdPath();
-        if (!pathToMd) return;
-        const debugConfiguration = readConfiguration();
-        const md = createMd(pathToMd, debugConfiguration.markdownItOptions, debugConfiguration.plugins);
-        runMd(md, debugConfiguration);
+    const startWithoutDebugging = function () {
+        importContext.previewUri = previewUri;
+        const debugHost = require("./debugHost");
+        debugHost.start(
+            importContext,
+            readConfiguration(),
+            getMdPath(),
+            vscode.workspace.rootPath
+        );
     }; //startWithoutDebugging
 
     const startDebugging = function () {
