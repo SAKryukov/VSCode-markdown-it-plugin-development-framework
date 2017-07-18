@@ -4,7 +4,8 @@ exports.activate = function (context) {
 
     const encoding = "utf8";
     const Utf8BOM = "\ufeff";
-    const defaultSmartQuotes = '""' + "''";
+    const defaultSmartQuotes = '“”' + "‘’";
+    const formatProcessed = "Processed by plug-ins: \"%s\"";
 
     const vscode = require("vscode");
     const path = require("path");
@@ -118,19 +119,21 @@ exports.activate = function (context) {
 
     const createMd = function (markdownPath, markdownItOptions, plugins) {
         const rootPath = vscode.workspace.rootPath;
-        const errors = []; //SA???
         const constructor = require(markdownPath);
         const md = new constructor();
         markdownItOptions.xhtmlOut = true; //absolutely required default
         md.set(markdownItOptions);
-        for (let index in plugins)
+        for (let index in plugins) {
+            const plugin = plugins[index]; 
+            if (!plugin.enabled) continue;
             try {
-                const pluginPath = path.join(rootPath, plugins[index].path);
+                const pluginPath = path.join(rootPath, plugin.path);
                 const plugin = require(pluginPath);
-                md.use(plugin, plugins[index].options);
+                md.use(plugin, plugin.options);
             } catch (ex) {
                 errors.push(ex.toString());
             } //exception
+        } //loop
         return md;
     }; //createMd
 
@@ -166,7 +169,7 @@ exports.activate = function (context) {
                 "vscode.previewHtml",
                 previewUri,
                 vscode.ViewColumn.One,
-                util.format("Preview \"%s\"", lastFileName));
+                util.format(formatProcessed, path.basename(lastFileName)));
         } //if        
     }; //runMd
 
@@ -244,7 +247,7 @@ exports.activate = function (context) {
                     "vscode.previewHtml",
                     previewUri,
                     vscode.ViewColumn.One,
-                    util.format("Preview \"%s\"", path.basename(lastFileName)));
+                    util.format(formatProcessed, path.basename(lastFileName)));
                 watchCompleted.content = undefined;
                 watchCompleted.fileName = undefined;
             } //if

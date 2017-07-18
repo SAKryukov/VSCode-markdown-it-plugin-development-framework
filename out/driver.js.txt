@@ -7,12 +7,14 @@ const debugConfiguration = %s;
 
 const constructor = require("%s");
 const md = new constructor();
-debugConfiguration.xhtmlOut = true;
+debugConfiguration.markdownItOptions.xhtmlOut = true;
+md.set(debugConfiguration.markdownItOptions);
 
 const rootPath = "%s";
 
 const plugins = debugConfiguration.plugins;
-for (let index in plugins)
+for (let index in plugins) {
+    if (!plugins[index].enabled) continue;
     try {
         const pluginPath = path.join(rootPath, plugins[index].path);
         const plugin = require(pluginPath);
@@ -20,6 +22,7 @@ for (let index in plugins)
     } catch (ex) {
         console.log(ex.toString());
     } //exception
+} //loop
 
 const last = { content: undefined, fileName: undefined }; 
 
