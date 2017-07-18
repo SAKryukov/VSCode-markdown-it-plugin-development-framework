@@ -28,6 +28,7 @@ exports.activate = function (context) {
         TextDocumentContentProvider.prototype.provideTextDocumentContent = function (uri) {
             if (vscode.workspace.lastContent)
                 return vscode.workspace.lastContent;
+            vscode.workspace.lastContent = null;
         }; //TextDocumentContentProvider.prototype.provideTextDocumentContent
         Object.defineProperty(TextDocumentContentProvider.prototype, "onDidChange", {
             get: function () { return this.changeSourceHandler.event; }, enumerable: true, configurable: true
@@ -164,7 +165,7 @@ exports.activate = function (context) {
                 "vscode.previewHtml",
                 previewUri,
                 vscode.ViewColumn.One,
-                util.format("Preview \"%s\"", path.basename(lastFileName)));
+                util.format("Preview \"%s\"", lastFileName));
         } //if        
     }; //runMd
 
@@ -195,7 +196,7 @@ exports.activate = function (context) {
     }; //startWithoutDebugging
 
     const startDebugging = function () {
-        const pathToMd = getMdPath().replace(/\\/g, '/');
+        const pathToMd = semantic.unifyFileString(getMdPath());
         if (!pathToMd) return;
         const rootPath = vscode.workspace.rootPath;
         const launchConfiguration = {
@@ -210,30 +211,41 @@ exports.activate = function (context) {
         const debugConfigurationString = jsonFormatter(
             debugConfiguration,
             { type: "space", size: 2 });
-        const semanticPath = path.join(__dirname, "semantic.js");
+        let doWatch = false;
+        if (!vscode.workspace.tmpDir) {
+            vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
+            doWatch = true;
+        } //if
+        const dirName = vscode.workspace.tmpDir.name;
+        const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
+        const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
         const code = util.format(
             templateSet.driver,
             debugConfigurationString,
-            pathToMd.replace(/\\/g, '/'),
-            rootPath.replace(/\\/g, '/'));
-        if (!vscode.workspace.tmpDir)
-            vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: "tmp.js" });
-        const dirName = vscode.workspace.tmpDir.name;
-        const htmlFileName = path.join(dirName, "last.html");
-        try {
-            fs.unlinkSync(htmlFileName);
-        } catch (ex) { }
+            semantic.unifyFileString(pathToMd),
+            semantic.unifyFileString(rootPath),
+            htmlFileName,
+            lastFileFileName);
         launchConfiguration.program = path.join(dirName, "driver.js");
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
-        fs.watch(vscode.workspace.tmpDir.name, function (event, fileName) {
-            if (path.basename(htmlFileName).toLowerCase() == path.basename(fileName).toLowerCase()) {
-                vscode.workspace.lastContent = fs.readFileSync(htmlFileName, encoding);
+        const watchCompleted = { content: undefined, fileName: undefined };
+        if (doWatch) fs.watch(vscode.workspace.tmpDir.name, function (event, fileName) {
+            fileName = path.basename(fileName).toLowerCase();
+            if (fs.existsSync(htmlFileName) && path.basename(htmlFileName).toLowerCase() == fileName)
+                watchCompleted.content = htmlFileName;
+            if (fs.existsSync(lastFileFileName) && path.basename(lastFileFileName).toLowerCase() == fileName)
+                watchCompleted.fileName = lastFileFileName;
+            if (watchCompleted.content && watchCompleted.fileName) {
+                const lastFileName = fs.readFileSync(watchCompleted.fileName, encoding);
+                vscode.workspace.lastContent = fs.readFileSync(watchCompleted.content, encoding);
                 vscode.commands.executeCommand(
                     "vscode.previewHtml",
                     previewUri,
                     vscode.ViewColumn.One,
-                    util.format("Preview \"%s\"", "Ha!"));
+                    util.format("Preview \"%s\"", path.basename(lastFileName)));
+                watchCompleted.content = undefined;
+                watchCompleted.fileName = undefined;
             } //if
         });
     }; //startDebugging

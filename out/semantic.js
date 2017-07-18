@@ -20,3 +20,5 @@ module.exports.getSettings = function (importContext) { // see package.json, "co
     } //settings
     return settings;
 }; //getSettings
+
+module.exports.unifyFileString = function (s) { return s.replace(/\\/g, '/'); }

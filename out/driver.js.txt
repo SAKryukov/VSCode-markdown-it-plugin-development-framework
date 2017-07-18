@@ -21,7 +21,7 @@ for (let index in plugins)
         console.log(ex.toString());
     } //exception
 
-let lastContent;
+const last = { content: undefined, fileName: undefined }; 
 
 for (let index in debugConfiguration.testDataSet) {
     const inputFileName = path.join(rootPath, debugConfiguration.testDataSet[index]);
@@ -36,13 +36,19 @@ for (let index in debugConfiguration.testDataSet) {
             path.basename(inputFileName,
                 path.extname(inputFileName))) + ".html";
         fs.writeFileSync(output, result);
-        lastContent = result;
+        last.content = result;
+        last.fileName = output;
     } //if
 } //loop
 
-if (lastContent && debugConfiguration.debugSessionOptions.showLastHTML) {
-    const output = path.join(__dirname, "last.html");
-    fs.writeFileSync(output, lastContent);
+const callbackFileNames = {
+    content: "%s",
+    fileName: "%s"
+};
+
+if (last.content && last.fileName && debugConfiguration.debugSessionOptions.showLastHTML) {
+    fs.writeFileSync(callbackFileNames.content, last.content);
+    fs.writeFileSync(callbackFileNames.fileName, path.basename(last.fileName));
 } //if
 
-console.log("Debugging complete")
+console.log("Debugging complete");
