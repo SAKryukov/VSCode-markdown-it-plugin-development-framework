@@ -12,7 +12,7 @@
     "icon": "images/logo.png",
     "repository": {
         "type": "git",
-        "url": "https://github.com/SAKryukov/markdown-it-plugin-development-framework.git"
+        "url": "https://github.com/SAKryukov/vscode-markdown-it-plugin-development-framework.git"
     },
     "engines": {
         "vscode": "^1.13.1"
