@@ -65,10 +65,10 @@ module.exports.start = function (
     if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
 
     if (importContext) { // without debugging
-        importContext.vscode.workspace.lastContent = last.content;
+        importContext.vscode.workspace.env.lastContent = last.content;
         importContext.vscode.commands.executeCommand(
             "vscode.previewHtml",
-            importContext.previewUri,
+            importContext.vscode.workspace.env.previewUri,
             importContext.vscode.ViewColumn.One,
             importContext.util.format(formatProcessed, importContext.path.basename(last.fileName)));
     } else { // under the debugger

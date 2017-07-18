@@ -18,18 +18,24 @@ exports.activate = function (context) {
     const jsonFormatter = require("./node_modules/json-format");
     const tmp = require("./node_modules/tmp");
 
-    const previewAuthority = "markdown-debug-preview";
-    const previewUri =
-        vscode.Uri.parse(util.format("%s://authority/%s", previewAuthority, previewAuthority));
+    const setWorspaceGlobal = (function () {
+        console.assert(!vscode.workspace.hasOwnProperty("env"), "vscode.workspace.env property already exists");
+        vscode.workspace.env = {};
+        vscode.workspace.env.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
+        vscode.workspace.env.doWatch = true;
+        vscode.workspace.env.previewAuthority = "markdown-debug-preview";
+        vscode.workspace.env.previewUri =
+            vscode.Uri.parse(util.format("%s://authority/%s", vscode.workspace.env.previewAuthority, vscode.workspace.env.previewAuthority));
+    }());
 
     const TextDocumentContentProvider = (function () {
         function TextDocumentContentProvider() {
             this.changeSourceHandler = new vscode.EventEmitter();
         } //TextDocumentContentProvider
         TextDocumentContentProvider.prototype.provideTextDocumentContent = function (uri) {
-            if (vscode.workspace.lastContent)
-                return vscode.workspace.lastContent;
-            vscode.workspace.lastContent = null;
+            if (vscode.workspace.env.lastContent)
+                return vscode.workspace.env.lastContent;
+            vscode.workspace.env.lastContent = null;
         }; //TextDocumentContentProvider.prototype.provideTextDocumentContent
         Object.defineProperty(TextDocumentContentProvider.prototype, "onDidChange", {
             get: function () { return this.changeSourceHandler.event; }, enumerable: true, configurable: true
@@ -39,8 +45,6 @@ exports.activate = function (context) {
         }; //TextDocumentContentProvider.prototype.update
         return TextDocumentContentProvider;
     }()); //TextDocumentContentProvider
-    const provider = new TextDocumentContentProvider();
-    const registration = vscode.workspace.registerTextDocumentContentProvider(previewAuthority, provider);
 
     const getConfigurationFileName = function (rootPath) {
         if (!vscode.workspace.settings)
@@ -124,7 +128,7 @@ exports.activate = function (context) {
         markdownItOptions.xhtmlOut = true; //absolutely required default
         md.set(markdownItOptions);
         for (let index in plugins) {
-            const plugin = plugins[index]; 
+            const plugin = plugins[index];
             if (!plugin.enabled) continue;
             try {
                 const pluginPath = path.join(rootPath, plugin.path);
@@ -158,7 +162,6 @@ exports.activate = function (context) {
     }; //readConfiguration
 
     const startWithoutDebugging = function () {
-        importContext.previewUri = previewUri;
         const debugHost = require("./debugHost");
         debugHost.start(
             importContext,
@@ -184,12 +187,7 @@ exports.activate = function (context) {
         const debugConfigurationString = jsonFormatter(
             debugConfiguration,
             { type: "space", size: 2 });
-        let doWatch = false;
-        if (!vscode.workspace.tmpDir) {
-            vscode.workspace.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
-            doWatch = true;
-        } //if
-        const dirName = vscode.workspace.tmpDir.name;
+        const dirName = vscode.workspace.env.tmpDir.name;
         const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
         const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
         const code = util.format(
@@ -203,7 +201,8 @@ exports.activate = function (context) {
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
         const watchCompleted = { content: undefined, fileName: undefined };
-        if (doWatch) fs.watch(vscode.workspace.tmpDir.name, function (event, fileName) {
+        if (vscode.workspace.env.doWatch) fs.watch(vscode.workspace.env.tmpDir.name, function (event, fileName) {
+            vscode.workspace.env.doWatch = false;
             fileName = path.basename(fileName).toLowerCase();
             if (fs.existsSync(htmlFileName) && path.basename(htmlFileName).toLowerCase() == fileName)
                 watchCompleted.content = htmlFileName;
@@ -211,10 +210,10 @@ exports.activate = function (context) {
                 watchCompleted.fileName = lastFileFileName;
             if (watchCompleted.content && watchCompleted.fileName) {
                 const lastFileName = fs.readFileSync(watchCompleted.fileName, encoding);
-                vscode.workspace.lastContent = fs.readFileSync(watchCompleted.content, encoding);
+                vscode.workspace.env.lastContent = fs.readFileSync(watchCompleted.content, encoding);
                 vscode.commands.executeCommand(
                     "vscode.previewHtml",
-                    previewUri,
+                    vscode.workspace.env.previewUri,
                     vscode.ViewColumn.One,
                     util.format(formatProcessed, path.basename(lastFileName)));
                 watchCompleted.content = undefined;
@@ -228,9 +227,15 @@ exports.activate = function (context) {
     }); //vscode.workspace.onDidChangeConfiguration
 
     context.subscriptions.push(
+        vscode.workspace.registerTextDocumentContentProvider(
+            vscode.workspace.env.previewAuthority,
+            new TextDocumentContentProvider()));
+
+    context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startWithoutDebugging", function () {
             startWithoutDebugging();
-        }));
+        })
+    );
 
     context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startDebugging", function () {
@@ -245,6 +250,6 @@ exports.activate = function (context) {
 }; //exports.activate
 
 exports.deactivate = function deactivate() {
-    if (vscode.workspace.tmpDir)
-        vscode.workspace.tmpDir.removeCallback();
+    if (vscode.workspace.env.tmpDir)
+        vscode.workspace.env.tmpDir.removeCallback();
 }; //exports.deactivate
