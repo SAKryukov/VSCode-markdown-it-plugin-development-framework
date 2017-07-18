@@ -11,14 +11,16 @@ module.exports.start = function (
     const formatProcessed = "Processed by plug-ins: \"%s\"";
     const isString = function (o) { return typeof o == typeof ""; };
 
+    const standAlong = !importContext;
+
     if (!importContext)
         importContext = {
             path: require("path"),
             fs: require("fs")
         }
 
-    if (isString(debugConfiguration))
-        debugConfiguration = JSON.parse(debugConfigurationJson);
+    if (standAlong)
+        debugConfiguration = JSON.parse(debugConfiguration);
 
     const constructor = require(pathToMarkdown);
     const md = new constructor();
@@ -27,12 +29,11 @@ module.exports.start = function (
 
     const plugins = debugConfiguration.plugins;
     for (let index in plugins) {
-        const plugin = plugins[index];
-        if (!plugin.enabled) continue;
+        if (!plugins[index].enabled) continue;
         try {
-            const pluginPath = importContext.path.join(rootPath, plugin.path);
+            const pluginPath = importContext.path.join(rootPath, plugins[index].path);
             const plugin = require(pluginPath);
-            md.use(plugin, plugin.options);
+            md.use(plugin, plugins[index].options);
         } catch (ex) {
             console.error(ex.toString());
         } //exception
@@ -64,14 +65,7 @@ module.exports.start = function (
     if (!last.fileName) return;
     if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
 
-    if (importContext) { // without debugging
-        importContext.vscode.workspace.env.lastContent = last.content;
-        importContext.vscode.commands.executeCommand(
-            "vscode.previewHtml",
-            importContext.vscode.workspace.env.previewUri,
-            importContext.vscode.ViewColumn.One,
-            importContext.util.format(formatProcessed, importContext.path.basename(last.fileName)));
-    } else { // under the debugger
+    if (standAlong) { // under the debugger
         const callbackFileNames = {
             content: callbackFileNameContent,
             fileName: callbackFileNameContentFileName
@@ -80,8 +74,15 @@ module.exports.start = function (
             importContext.fs.writeFileSync(callbackFileNames.content, last.content);
             importContext.fs.writeFileSync(callbackFileNames.fileName, importContext.path.basename(last.fileName));
         } //if
-        if (!importContext)
+        if (standAlong)
             console.log("Debugging complete");
+    } else { // without debugging
+        importContext.vscode.workspace.env.lastContent = last.content;
+        importContext.vscode.commands.executeCommand(
+            "vscode.previewHtml",
+            importContext.vscode.workspace.env.previewUri,
+            importContext.vscode.ViewColumn.One,
+            importContext.util.format(formatProcessed, importContext.path.basename(last.fileName)));
     } //if
 
 }; //module.exports.debugHost
