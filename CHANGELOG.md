@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 1.0.0
+
+* First production release
+
 ## Version 0.5.0
 
 * Fixed repository URL
