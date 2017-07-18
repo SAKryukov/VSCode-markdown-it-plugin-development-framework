@@ -1,1 +1,4 @@
 /.vscode
+docs/sample-plugin/*.html
+out/**/*.html
+markdown-it-debugging.settings.json
