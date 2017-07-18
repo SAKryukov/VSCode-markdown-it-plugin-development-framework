@@ -64,11 +64,11 @@ exports.activate = function (context) {
                 const plugins = [];
                 for (let index = 0; index < markdownFiles.length; ++index)
                     markdownDocuments.push(
-                        path.relative(rootPath, markdownFiles[index].fsPath));
+                        semantic.unifyFileString(path.relative(rootPath, markdownFiles[index].fsPath)));
                 for (let index = 0; index < packageFiles.length; ++index)
                     plugins.push({
                         enabled: true,
-                        path: path.relative(rootPath, path.dirname(packageFiles[index].fsPath)),
+                        path: semantic.unifyFileString(path.relative(rootPath, path.dirname(packageFiles[index].fsPath))),
                         options: {}
                     });
                 action(markdownDocuments, plugins);
@@ -181,7 +181,7 @@ exports.activate = function (context) {
         const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);
         const debugConfiguration = readConfiguration();
         if (!debugConfiguration) return;
-        const debugConfigurationString = JSON.stringify(debugConfiguration);
+        const debugConfigurationString = JSON.stringify(semantic.normalizeConfigurationPaths(debugConfiguration));
         const dirName = semantic.unifyFileString(vscode.workspace.env.tmpDir.name);
         const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
         const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));            
