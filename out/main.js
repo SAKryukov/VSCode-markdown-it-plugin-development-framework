@@ -190,7 +190,6 @@ exports.activate = function (context) {
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
         // preview:
         if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
-        semantic.top().lastFiles.content = htmlFileName;
         semantic.top().lastFiles.fileName = lastFileFileName;
     }; //startDebugging
 

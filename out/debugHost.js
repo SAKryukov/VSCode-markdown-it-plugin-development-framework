@@ -42,7 +42,7 @@ module.exports.start = function (
 
     if (debugConfiguration.testDataSet.length < 1) return;
 
-    const last = { content: undefined, fileName: undefined };
+    const last = { fileName: undefined };
 
     for (let index in debugConfiguration.testDataSet) {
         const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
@@ -55,7 +55,6 @@ module.exports.start = function (
                 importContext.path.basename(inputFileName,
                     importContext.path.extname(inputFileName))) + ".html";
             importContext.fs.writeFileSync(output, result);
-            last.content = result;
             last.fileName = output;
         } //if
     } //loop
@@ -68,13 +67,10 @@ module.exports.start = function (
 
     if (standAlong) { // under the debugger
         const callbackFileNames = {
-            content: callbackFileNameContent,
             fileName: callbackFileNameContentFileName
         };
-        if (last.content && last.fileName && debugConfiguration.debugSessionOptions.showLastHTML) {
-            importContext.fs.writeFileSync(callbackFileNames.content, last.content);
+        if (last.fileName && debugConfiguration.debugSessionOptions.showLastHTML)
             importContext.fs.writeFileSync(callbackFileNames.fileName, importContext.path.basename(last.fileName));
-        } //if
         if (standAlong)
             console.log("Debugging complete");
     } else { // without debugging
