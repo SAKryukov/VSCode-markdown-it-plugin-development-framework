@@ -6,7 +6,7 @@ This is a Visual Studio Code *extension* used to facilitate development, testing
 
 ## Usage
 
-The developer provides one or more plug-in packages and a set of markdown documents used as a data set for testing/debugging. The environment picks up those items in a current workspace and suggests a configuration file which can be modified by the developer. It defines the markdown-it options, a chain of plug-ins to be used in a given order, with options for each plug-in. This defines the scenario of testing/debugging, which can be executed under the debugger or without debugging. On output, the execution generates a set of HTML files (optional), and show a preview of generated file (optional).
+The developer provides one or more plug-in packages and a set of markdown documents used as a data set for testing/debugging. The environment picks up those items in a current workspace and suggests a configuration file which can be modified by the developer. It defines the markdown-it options, a chain of plug-ins to be used in a given order, with options for each plug-in. This defines the scenario of testing/debugging, which can be executed under the debugger or without debugging. On output, the execution generates a set of HTML files (optional), and show a generated HTML file (optional).
 
 ## Settings
 
