@@ -45,6 +45,16 @@
             }
         ],
         "menus": {
+            "explorer/context": [
+                {
+                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
+                    "group": "debug markdown"
+                },
+                {
+                    "command": "markdown.pluginDevelopment.startDebugging",
+                    "group": "debug markdown"
+                }
+            ],
             "editor/context": [
                 {
                     "command": "markdown.pluginDevelopment.startWithoutDebugging",
@@ -59,6 +69,12 @@
                 {
                     "command": "markdown.pluginDevelopment.startDebugging",
                     "group": "navigation"
+                }
+            ],
+            "editor/title/context": [
+                {
+                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
+                    "group": "debug markdown"
                 }
             ]
         },
