@@ -52,17 +52,13 @@ module.exports.top = function (importContext) {
             this.importContext.util.format(
                 "%s://authority/%s", this.previewAuthority,
                 this.previewAuthority));
-    this.lastFiles = { content: undefined, fileName: undefined };
+    this.lastFiles = { fileName: undefined };
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
-        if (!self.lastFiles.content) return;
         if (!self.lastFiles.fileName) return;
-        if (fileName != self.importContext.path.basename(self.lastFiles.content) &&
-            (fileName != self.importContext.path.basename(self.lastFiles.fileName)))
+        if (fileName != self.importContext.path.basename(self.lastFiles.fileName))
             return;
-        if (!self.importContext.fs.existsSync(self.lastFiles.content)) return;
         if (!self.importContext.fs.existsSync(self.lastFiles.fileName)) return;
         const lastName = self.importContext.fs.readFileSync(self.lastFiles.fileName, self.importContext.encoding);
-        self.lastFiles.content = null;
         self.lastFiles.fileName = null;
         const fullPath = self.importContext.path.join(self.importContext.vscode.workspace.rootPath, lastName);
         if (self.importContext.fs.existsSync(fullPath))
