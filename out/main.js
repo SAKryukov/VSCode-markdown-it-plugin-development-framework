@@ -17,10 +17,13 @@ exports.activate = function (context) {
     const jsonFormatter = require("./node_modules/json-format");
     const tmp = require("./node_modules/tmp");
 
+    semantic.top({ vscode: vscode, util: util, fs: fs, path: path, tmp: tmp });
+
     const setWorspaceGlobal = (function () {
         console.assert(!vscode.workspace.hasOwnProperty("env"), "vscode.workspace.env property already exists");
         vscode.workspace.env = {};
-        vscode.workspace.env.importContext = { vscode: vscode, util: util, fs: fs, path: path };
+        vscode.workspace.env.importContext = { vscode: vscode, util: util, fs: fs, path: path, tmp: tmp };
+
         vscode.workspace.env.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
         vscode.workspace.env.previewAuthority = "markdown-debug-preview";
         vscode.workspace.env.previewUri =

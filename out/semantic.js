@@ -33,3 +33,37 @@ module.exports.normalizeConfigurationPaths = function (configuration) {
                 configuration.testDataSet[index] = module.exports.unifyFileString(configuration.testDataSet[index]);
     return configuration;
 }; //module.exports.normalizeConfigurationPaths
+
+module.exports.top = function (importContext) {
+    if (!this.importContext)
+        this.importContext = importContext;
+    this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
+    this.previewAuthority = "markdown-debug-preview";
+    this.previewUri =
+        this.importContext.vscode.Uri.parse(
+            this.importContext.util.format(
+                "%s://authority/%s", this.previewAuthority,
+                this.previewAuthority));
+    this.lastFiles = { content: undefined, fileName: undefined };
+    this.lastContent = undefined;
+
+    this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
+        if (!this.lastFiles.content) return;
+        if (!this.lastFiles.fileName) return;
+        if (fileName != path.basename(this.lastFiles.content) &&
+            (fileName != path.basename(this.lastFiles.fileName)))
+            return;
+        if (!fs.existsSync(this.lastFiles.content)) return;
+        if (!fs.existsSync(this.lastFiles.fileName)) return;
+        const lastName = this.importContextfs.readFileSync(this.lastFiles.fileName, encoding);
+        this.lastContent = this.importContextfs.readFileSync(this.lastFiles.content, encoding);
+        this.lastFiles.content = null;
+        this.lastFiles.fileName = null;
+        this.importContextvscode.commands.executeCommand(
+            "vscode.previewHtml",
+            this.previewUri,
+            this.importContextvscode.ViewColumn.One,
+            this.importContext.util.format(formatProcessed, this.importContext.path.basename(lastName)));
+    });
+    return this;
+} //module.exports.top
