@@ -3,7 +3,6 @@ module.exports.start = function (
     debugConfiguration,
     pathToMarkdown,
     rootPath,
-    callbackFileNameContent,
     callbackFileNameContentFileName) {
 
     const encoding = "utf8";
@@ -42,7 +41,7 @@ module.exports.start = function (
 
     if (debugConfiguration.testDataSet.length < 1) return;
 
-    const last = { fileName: undefined };
+    let lastfileName = undefined;
 
     for (let index in debugConfiguration.testDataSet) {
         const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
@@ -55,27 +54,27 @@ module.exports.start = function (
                 importContext.path.basename(inputFileName,
                     importContext.path.extname(inputFileName))) + ".html";
             importContext.fs.writeFileSync(output, result);
-            last.fileName = output;
+            lastfileName = output;
         } //if
     } //loop
 
-    if (!last.fileName)
+    if (!lastfileName)
         for (let index in debugConfiguration.testDataSet)
-            last.fileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
-    if (!last.fileName) return;
+            lastfileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
+    if (!lastfileName) return;
     if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
 
     if (standAlong) { // under the debugger
         const callbackFileNames = {
             fileName: callbackFileNameContentFileName
         };
-        if (last.fileName && debugConfiguration.debugSessionOptions.showLastHTML)
-            importContext.fs.writeFileSync(callbackFileNames.fileName, importContext.path.basename(last.fileName));
+        if (lastfileName && debugConfiguration.debugSessionOptions.showLastHTML)
+            importContext.fs.writeFileSync(callbackFileNames.fileName, lastfileName);
         if (standAlong)
             console.log("Debugging complete");
     } else { // without debugging
-        if (importContext.fs.existsSync(last.fileName))
-            importContext.vscode.workspace.openTextDocument(last.fileName, { preserveFocus: true }).then(function (doc) {
+        if (importContext.fs.existsSync(lastfileName))
+            importContext.vscode.workspace.openTextDocument(lastfileName, { preserveFocus: true }).then(function (doc) {
                 importContext.vscode.window.showTextDocument(doc);
             });
     } //if

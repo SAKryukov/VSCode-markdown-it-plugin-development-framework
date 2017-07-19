@@ -52,17 +52,16 @@ module.exports.top = function (importContext) {
             this.importContext.util.format(
                 "%s://authority/%s", this.previewAuthority,
                 this.previewAuthority));
-    this.lastFiles = { fileName: undefined };
+    this.lastFileName = undefined;
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
-        if (!self.lastFiles.fileName) return;
-        if (fileName != self.importContext.path.basename(self.lastFiles.fileName))
+        if (!self.lastFileName) return;
+        if (fileName != self.importContext.path.basename(self.lastFileName))
             return;
-        if (!self.importContext.fs.existsSync(self.lastFiles.fileName)) return;
-        const lastName = self.importContext.fs.readFileSync(self.lastFiles.fileName, self.importContext.encoding);
-        self.lastFiles.fileName = null;
-        const fullPath = self.importContext.path.join(self.importContext.vscode.workspace.rootPath, lastName);
-        if (self.importContext.fs.existsSync(fullPath))
-            self.importContext.vscode.workspace.openTextDocument(fullPath, { preserveFocus: true }).then(function (doc) {
+        if (!self.importContext.fs.existsSync(self.lastFileName)) return;
+        const lastName = self.importContext.fs.readFileSync(self.lastFileName, self.importContext.encoding);
+        self.lastFileName = null;
+        if (self.importContext.fs.existsSync(lastName))
+            self.importContext.vscode.workspace.openTextDocument(lastName, { preserveFocus: true }).then(function (doc) {
                 self.importContext.vscode.window.showTextDocument(doc);
             });
     });

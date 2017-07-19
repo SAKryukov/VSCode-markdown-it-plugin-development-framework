@@ -1,5 +1,13 @@
 # Changelog
 
+## Version 2.0.0
+
+* Instead of HTML preview, HTML source is shown (optional)
+* Added clean-up of the debug console before running the scenario under the debugger
+* Stability fixes
+
+* First production release
+
 ## Version 1.0.0
 
 * First production release

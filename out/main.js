@@ -171,12 +171,11 @@ exports.activate = function (context) {
         semantic.clearDebugConsole(semantic.top().importContext);
         const debugConfigurationString = JSON.stringify(debugConfiguration);
         const dirName = semantic.unifyFileString(semantic.top().tmpDir.name);
-        const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
         const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
         const hostPath = semantic.unifyFileString(path.join(__dirname, "debugHost"));
         let code = util.format("const host = require(\"%s\");\n", hostPath);
-        code += util.format("host.start(\n\tnull, \n\t'%s', \n\t\"%s\", \n\t\"%s\", \n\t\"%s\", \n\t\"%s\");",
-            debugConfigurationString, pathToMd, rootPath, htmlFileName, lastFileFileName);
+        code += util.format("host.start(\n\tnull, \n\t'%s', \n\t\"%s\", \n\t\"%s\", \n\t\"%s\");",
+            debugConfigurationString, pathToMd, rootPath, lastFileFileName);
         const launchConfiguration = {
             type: "node2", // a real confusion! found by tracing Visual Studio Code
             name: "Launch Extension",
@@ -190,7 +189,7 @@ exports.activate = function (context) {
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
         // preview:
         if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
-        semantic.top().lastFiles.fileName = lastFileFileName;
+        semantic.top().lastFileName = lastFileFileName;
     }; //startDebugging
 
     context.subscriptions.push(
