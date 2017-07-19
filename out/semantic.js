@@ -39,6 +39,16 @@ module.exports.normalizeConfigurationPaths = function (configuration) {
 module.exports.top = function (importContext) {
     if (this.importContext) return this;
     this.importContext = importContext;
+    this.settings = undefined;
+    this.configuration = undefined;
+    this.importContext.vscode.workspace.onDidChangeConfiguration(function (e) {
+        this.settings = undefined;
+        this.configuration = undefined;
+    }); 
+    this.importContext.vscode.workspace.onDidSaveTextDocument(function (e) {
+        this.settings = undefined;
+        this.configuration = undefined;
+    }); 
     this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
     this.previewAuthority = "markdown-debug-preview";
     this.previewUri =

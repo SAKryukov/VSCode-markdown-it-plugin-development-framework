@@ -5,7 +5,7 @@ exports.activate = function (context) {
     const encoding = "utf8";
     const Utf8BOM = "\ufeff";
     const defaultSmartQuotes = '“”' + "‘’";
-    
+
     const vscode = require("vscode");
     const path = require("path");
     const fs = require("fs");
@@ -37,13 +37,13 @@ exports.activate = function (context) {
     }()); //TextDocumentContentProvider
 
     const getConfigurationFileName = function (rootPath) {
-        if (!vscode.workspace.settings)
-            vscode.workspace.settings = semantic.getSettings(semantic.top().importContext);
+        if (!semantic.top().settings)
+            semantic.top().settings = semantic.getSettings(semantic.top().importContext);
         const dirName = path.join(rootPath, ".vscode");
         try {
             fs.mkdirSync(dirName);
         } catch (ex) { }
-        return path.join(dirName, vscode.workspace.settings.debugConfigurationFileName);
+        return path.join(dirName, semantic.top().settings.debugConfigurationFileName);
     }; //getConfigurationFileName
 
     const collectFiles = function (action) {
@@ -115,26 +115,6 @@ exports.activate = function (context) {
         });
     }; //generateConfiguration
 
-    const createMd = function (markdownPath, markdownItOptions, plugins) {
-        const rootPath = vscode.workspace.rootPath;
-        const constructor = require(markdownPath);
-        const md = new constructor();
-        markdownItOptions.xhtmlOut = true; //absolutely required default
-        md.set(markdownItOptions);
-        for (let index in plugins) {
-            const plugin = plugins[index];
-            if (!plugin.enabled) continue;
-            try {
-                const pluginPath = path.join(rootPath, plugin.path);
-                const plugin = require(pluginPath);
-                md.use(plugin, plugin.options);
-            } catch (ex) {
-                errors.push(ex.toString());
-            } //exception
-        } //loop
-        return md;
-    }; //createMd
-
     const templateSet = semantic.getTemplateSet(path, fs, encoding);
 
     const getMdPath = function () {
@@ -145,6 +125,8 @@ exports.activate = function (context) {
     }; //getMdPath
 
     const readConfiguration = function () {
+        //if (semantic.top().configuration)
+        //    return semantic.top().configuration;
         const fileName = getConfigurationFileName(vscode.workspace.rootPath);
         if (!fs.existsSync(fileName)) {
             generateConfiguration();
@@ -152,7 +134,12 @@ exports.activate = function (context) {
             return;
         } //if
         const json = fs.readFileSync(fileName, encoding);
-        return JSON.parse(jsonCommentStripper(json));
+        try {
+            semantic.top().configuration = JSON.parse(jsonCommentStripper(json));
+        } catch (ex) {
+            vscode.window.showInformationMessage(util.format("Failed configuration parsing: %s", fileName));
+        } //exception
+        return semantic.top().configuration;
     }; //readConfiguration
 
     const startWithoutDebugging = function () {
@@ -196,10 +183,6 @@ exports.activate = function (context) {
         semantic.top().lastFiles.content = htmlFileName;
         semantic.top().lastFiles.fileName = lastFileFileName;
     }; //startDebugging
-
-    vscode.workspace.onDidChangeConfiguration(function (e) {
-        vscode.workspace.settings = undefined;
-    }); //vscode.workspace.onDidChangeConfiguration
 
     context.subscriptions.push(
         vscode.workspace.registerTextDocumentContentProvider(
