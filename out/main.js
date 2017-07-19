@@ -168,6 +168,7 @@ exports.activate = function (context) {
         const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);
         const debugConfiguration = testConfiguration(readConfiguration(), rootPath);
         if (!debugConfiguration) return;
+        semantic.clearDebugConsole(semantic.top().importContext);
         const debugConfigurationString = JSON.stringify(debugConfiguration);
         const dirName = semantic.unifyFileString(semantic.top().tmpDir.name);
         const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));

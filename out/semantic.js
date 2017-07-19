@@ -13,7 +13,11 @@ module.exports.getSettings = function (importContext) { // see package.json, "co
     return settings;
 }; //getSettings
 
-module.exports.unifyFileString = function (s) { return s.replace(/\\/g, '/'); }
+module.exports.clearDebugConsole = function(importContext) {
+    importContext.vscode.commands.executeCommand("workbench.debug.panel.action.clearReplAction");
+}; //module.exports.clearDebugConsole
+
+module.exports.unifyFileString = function (s) { return s.replace(/\\/g, '/'); };
 
 module.exports.normalizeConfigurationPaths = function (configuration) {
     if (configuration.plugins)
