@@ -53,6 +53,10 @@
                 {
                     "command": "markdown.pluginDevelopment.startDebugging",
                     "group": "debug markdown"
+                },
+                {
+                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
+                    "group": "debug markdown"
                 }
             ],
             "editor/context": [
@@ -62,6 +66,10 @@
                 },
                 {
                     "command": "markdown.pluginDevelopment.startDebugging",
+                    "group": "debug markdown"
+                },
+                {
+                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
                     "group": "debug markdown"
                 }
             ],
@@ -75,7 +83,11 @@
                 {
                     "command": "markdown.pluginDevelopment.startWithoutDebugging",
                     "group": "debug markdown"
-                }
+                },
+                {
+                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
+                    "group": "debug markdown"
+                }                
             ]
         },
         "configuration": {
