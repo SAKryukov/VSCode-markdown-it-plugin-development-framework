@@ -1,5 +1,7 @@
 "use strict";
 
+const formatProcessed = "Processed by plug-ins: \"%s\"";
+
 module.exports.getTemplateSet = function (path, fs, encoding) {
     return {
         html: fs.readFileSync(path.join(__dirname, "/template-html.txt"), encoding),
@@ -10,11 +12,11 @@ module.exports.getTemplateSet = function (path, fs, encoding) {
 }; //getTemplateSet
 
 module.exports.getSettings = function (importContext) { // see package.json, "configuration":
-    const thisExtensionSection =
+    const selfExtensionSection =
         importContext.vscode.workspace.getConfiguration("markdown.extension.pluginDevelopment");
     const sharedSection = importContext.vscode.workspace.getConfiguration(importContext.markdownId);
     const settings = {
-        debugConfigurationFileName: thisExtensionSection["debugConfigurationFileName"],
+        debugConfigurationFileName: selfExtensionSection["debugConfigurationFileName"],
         css: sharedSection["styles"],
     } //settings
     return settings;
@@ -35,8 +37,8 @@ module.exports.normalizeConfigurationPaths = function (configuration) {
 }; //module.exports.normalizeConfigurationPaths
 
 module.exports.top = function (importContext) {
-    if (!this.importContext)
-        this.importContext = importContext;
+    if (this.importContext) return this;
+    this.importContext = importContext;
     this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
     this.previewAuthority = "markdown-debug-preview";
     this.previewUri =
@@ -46,24 +48,24 @@ module.exports.top = function (importContext) {
                 this.previewAuthority));
     this.lastFiles = { content: undefined, fileName: undefined };
     this.lastContent = undefined;
-
+    const self = this;
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
-        if (!this.lastFiles.content) return;
-        if (!this.lastFiles.fileName) return;
-        if (fileName != path.basename(this.lastFiles.content) &&
-            (fileName != path.basename(this.lastFiles.fileName)))
+        if (!self.lastFiles.content) return;
+        if (!self.lastFiles.fileName) return;
+        if (fileName != self.importContext.path.basename(self.lastFiles.content) &&
+            (fileName != self.importContext.path.basename(self.lastFiles.fileName)))
             return;
-        if (!fs.existsSync(this.lastFiles.content)) return;
-        if (!fs.existsSync(this.lastFiles.fileName)) return;
-        const lastName = this.importContextfs.readFileSync(this.lastFiles.fileName, encoding);
-        this.lastContent = this.importContextfs.readFileSync(this.lastFiles.content, encoding);
-        this.lastFiles.content = null;
-        this.lastFiles.fileName = null;
-        this.importContextvscode.commands.executeCommand(
+        if (!self.importContext.fs.existsSync(self.lastFiles.content)) return;
+        if (!self.importContext.fs.existsSync(self.lastFiles.fileName)) return;
+        const lastName = self.importContext.fs.readFileSync(self.lastFiles.fileName, self.importContext.encoding);
+        self.lastContent = self.importContext.fs.readFileSync(self.lastFiles.content, self.importContext.encoding);
+        self.lastFiles.content = null;
+        self.lastFiles.fileName = null;
+        self.importContext.vscode.commands.executeCommand(
             "vscode.previewHtml",
-            this.previewUri,
-            this.importContextvscode.ViewColumn.One,
-            this.importContext.util.format(formatProcessed, this.importContext.path.basename(lastName)));
+            self.previewUri,
+            self.importContext.vscode.ViewColumn.One,
+            self.importContext.util.format(formatProcessed, self.importContext.path.basename(lastName)));
     });
     return this;
 } //module.exports.top

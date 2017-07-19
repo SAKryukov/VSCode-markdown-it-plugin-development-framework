@@ -8,7 +8,7 @@ module.exports.start = function (
 
     const encoding = "utf8";
     const Utf8BOM = "\ufeff";
-    const formatProcessed = "Processed by plug-ins: \"%s\"";
+    const formatProcessed = "Processed under debugger: \"%s\"";
     const isString = function (o) { return typeof o == typeof ""; };
 
     const standAlong = !importContext;
@@ -77,10 +77,10 @@ module.exports.start = function (
         if (standAlong)
             console.log("Debugging complete");
     } else { // without debugging
-        importContext.vscode.workspace.env.lastContent = last.content;
+        importContext.top.lastContent = last.content;
         importContext.vscode.commands.executeCommand(
             "vscode.previewHtml",
-            importContext.vscode.workspace.env.previewUri,
+            importContext.top.previewUri,
             importContext.vscode.ViewColumn.One,
             importContext.util.format(formatProcessed, importContext.path.basename(last.fileName)));
     } //if
