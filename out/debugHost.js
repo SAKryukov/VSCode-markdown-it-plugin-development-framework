@@ -28,6 +28,7 @@ module.exports.start = function (
     md.set(debugConfiguration.markdownItOptions);
 
     const plugins = debugConfiguration.plugins;
+
     for (let index in plugins) {
         if (!plugins[index].enabled) continue;
         try {

@@ -121,7 +121,7 @@ exports.activate = function (context) {
         const extension = vscode.extensions.getExtension("Microsoft.vscode-markdown");
         if (!extension) return;
         const extensionPath = path.join(extension.extensionPath, "node_modules");
-        return path.join(extensionPath, "markdown-it");
+        return semantic.unifyFileString(path.join(extensionPath, "markdown-it"));
     }; //getMdPath
 
     const readConfiguration = function () {
@@ -135,31 +135,59 @@ exports.activate = function (context) {
         } //if
         const json = fs.readFileSync(fileName, encoding);
         try {
-            semantic.top().configuration = JSON.parse(jsonCommentStripper(json));
+            return semantic.normalizeConfigurationPaths(JSON.parse(jsonCommentStripper(json)));
         } catch (ex) {
             vscode.window.showInformationMessage(util.format("Failed configuration parsing: %s", fileName));
         } //exception
-        return semantic.top().configuration;
     }; //readConfiguration
 
+    const testConfiguration = function (configuration, rootPath) {
+        if (!configuration)
+            return configuration;
+        if (!rootPath)
+            rootPath = vscode.workspace.rootPath;
+        for (let index in configuration.plugins) {
+            const plugin = configuration.plugins[index];
+            if (!plugin.enabled) continue;
+            const pluginPath = plugin.path;
+            if (!fs.existsSync(path.join(rootPath, pluginPath))) {
+                vscode.window.showWarningMessage(util.format("Module \"%s\" not found", pluginPath));
+            } else {
+                const relativeModulePath = path.join(pluginPath, "package.json");
+                const modulePath = path.join(rootPath, relativeModulePath);
+                if (!fs.existsSync(modulePath))
+                    vscode.window.showWarningMessage(
+                        util.format("Module package \"%s\" not found", relativeModulePath));
+            } //of
+        } //loop plug-ins
+        for (let index in configuration.testDataSet) {
+            if (!fs.existsSync(path.join(rootPath, configuration.testDataSet[index])))
+                vscode.window.showWarningMessage(
+                    util.format("Test Mardown file \"%s\" not found", configuration.testDataSet[index]));
+        } //loop testDataSet
+        return configuration;
+    } //testConfiguration
+
     const startWithoutDebugging = function () {
+        const debugConfiguration = testConfiguration(readConfiguration());
+        if (!debugConfiguration) return;
         const debugHost = require("./debugHost");
         semantic.top().importContext.top = semantic.top(); 
         debugHost.start(
             semantic.top().importContext,
-            readConfiguration(),
+            debugConfiguration,
             getMdPath(),
             vscode.workspace.rootPath
         );
     }; //startWithoutDebugging
 
     const startDebugging = function () {
-        const pathToMd = semantic.unifyFileString(semantic.unifyFileString(getMdPath()));
+        const pathToMd = getMdPath();
         if (!pathToMd) return;
         const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);
-        const debugConfiguration = readConfiguration();
+        const debugConfiguration = testConfiguration(readConfiguration(), rootPath);
         if (!debugConfiguration) return;
-        const debugConfigurationString = JSON.stringify(semantic.normalizeConfigurationPaths(debugConfiguration));
+        const debugConfigurationString = JSON.stringify(debugConfiguration);
         const dirName = semantic.unifyFileString(semantic.top().tmpDir.name);
         const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
         const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
