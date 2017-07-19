@@ -22,11 +22,30 @@ exports.activate = function (context) {
         vscode.workspace.env = {};
         vscode.workspace.env.importContext = { vscode: vscode, util: util, fs: fs, path: path };
         vscode.workspace.env.tmpDir = tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
-        vscode.workspace.env.doWatch = true;
         vscode.workspace.env.previewAuthority = "markdown-debug-preview";
         vscode.workspace.env.previewUri =
             vscode.Uri.parse(util.format("%s://authority/%s", vscode.workspace.env.previewAuthority, vscode.workspace.env.previewAuthority));
-    }());
+        vscode.workspace.env.lastFiles = { content: undefined, fileName: undefined };
+        vscode.workspace.env.lastContent = undefined;
+        fs.watch(vscode.workspace.env.tmpDir.name, function (event, fileName) {
+            if (!vscode.workspace.env.lastFiles.content) return;
+            if (!vscode.workspace.env.lastFiles.fileName) return;
+            if (fileName != path.basename(vscode.workspace.env.lastFiles.content) &&
+                (fileName != path.basename(vscode.workspace.env.lastFiles.fileName)))
+                return;
+            if (!fs.existsSync(vscode.workspace.env.lastFiles.content)) return;
+            if (!fs.existsSync(vscode.workspace.env.lastFiles.fileName)) return;
+            const lastName = fs.readFileSync(vscode.workspace.env.lastFiles.fileName, encoding);
+            vscode.workspace.env.lastContent = fs.readFileSync(vscode.workspace.env.lastFiles.content, encoding);
+            vscode.workspace.env.lastFiles.content = null;
+            vscode.workspace.env.lastFiles.fileName = null;
+            vscode.commands.executeCommand(
+                "vscode.previewHtml",
+                vscode.workspace.env.previewUri,
+                vscode.ViewColumn.One,
+                util.format(formatProcessed, path.basename(lastName)));
+        });
+    }()); //setWorspaceGlobal
 
     const TextDocumentContentProvider = (function () {
         function TextDocumentContentProvider() {
@@ -184,7 +203,7 @@ exports.activate = function (context) {
         const debugConfigurationString = JSON.stringify(semantic.normalizeConfigurationPaths(debugConfiguration));
         const dirName = semantic.unifyFileString(vscode.workspace.env.tmpDir.name);
         const htmlFileName = semantic.unifyFileString(path.join(dirName, "last.html"));
-        const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));            
+        const lastFileFileName = semantic.unifyFileString(path.join(dirName, "lastFileName.txt"));
         const hostPath = semantic.unifyFileString(path.join(__dirname, "debugHost"));
         let code = util.format("const host = require(\"%s\");\n", hostPath);
         code += util.format("host.start(\n\tnull, \n\t'%s', \n\t\"%s\", \n\t\"%s\", \n\t\"%s\", \n\t\"%s\");",
@@ -197,29 +216,13 @@ exports.activate = function (context) {
             protocol: "auto"
         };
         const programName = path.join(dirName, "driver.js");
-        launchConfiguration.program = programName; 
+        launchConfiguration.program = programName;
         fs.writeFileSync(launchConfiguration.program, code);
         vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
-        const watchCompleted = { content: undefined, fileName: undefined };
-        if (vscode.workspace.env.doWatch) fs.watch(vscode.workspace.env.tmpDir.name, function (event, fileName) {
-            vscode.workspace.env.doWatch = false;
-            fileName = path.basename(fileName).toLowerCase();
-            if (fs.existsSync(htmlFileName) && path.basename(htmlFileName).toLowerCase() == fileName)
-                watchCompleted.content = htmlFileName;
-            if (fs.existsSync(lastFileFileName) && path.basename(lastFileFileName).toLowerCase() == fileName)
-                watchCompleted.fileName = lastFileFileName;
-            if (watchCompleted.content && watchCompleted.fileName) {
-                const lastFileName = fs.readFileSync(watchCompleted.fileName, encoding);
-                vscode.workspace.env.lastContent = fs.readFileSync(watchCompleted.content, encoding);
-                vscode.commands.executeCommand(
-                    "vscode.previewHtml",
-                    vscode.workspace.env.previewUri,
-                    vscode.ViewColumn.One,
-                    util.format(formatProcessed, path.basename(lastFileName)));
-                watchCompleted.content = undefined;
-                watchCompleted.fileName = undefined;
-            } //if
-        });
+        // preview:
+        if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
+        vscode.workspace.env.lastFiles.content = htmlFileName;
+        vscode.workspace.env.lastFiles.fileName = lastFileFileName;
     }; //startDebugging
 
     vscode.workspace.onDidChangeConfiguration(function (e) {
