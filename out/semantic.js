@@ -2,15 +2,6 @@
 
 const formatProcessed = "Processed by plug-ins: \"%s\"";
 
-module.exports.getTemplateSet = function (path, fs, encoding) {
-    return {
-        html: fs.readFileSync(path.join(__dirname, "/template-html.txt"), encoding),
-        style: fs.readFileSync(path.join(__dirname + "/template-style.txt"), encoding),
-        embeddedStyle: fs.readFileSync(path.join(__dirname + "/template-embedded-style.txt"), encoding),
-        notFoundCss: fs.readFileSync(path.join(__dirname + "/template-not-found-css.txt"), encoding)
-    }
-}; //getTemplateSet
-
 module.exports.getSettings = function (importContext) { // see package.json, "configuration":
     const selfExtensionSection =
         importContext.vscode.workspace.getConfiguration("markdown.extension.pluginDevelopment");
@@ -41,13 +32,14 @@ module.exports.top = function (importContext) {
     this.importContext = importContext;
     this.settings = undefined;
     this.configuration = undefined;
+    const self = this;
     this.importContext.vscode.workspace.onDidChangeConfiguration(function (e) {
-        this.settings = undefined;
-        this.configuration = undefined;
+        self.settings = undefined;
+        self.configuration = undefined;
     }); 
     this.importContext.vscode.workspace.onDidSaveTextDocument(function (e) {
-        this.settings = undefined;
-        this.configuration = undefined;
+        self.settings = undefined;
+        self.configuration = undefined;
     }); 
     this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
     this.previewAuthority = "markdown-debug-preview";
@@ -58,7 +50,6 @@ module.exports.top = function (importContext) {
                 this.previewAuthority));
     this.lastFiles = { content: undefined, fileName: undefined };
     this.lastContent = undefined;
-    const self = this;
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
         if (!self.lastFiles.content) return;
         if (!self.lastFiles.fileName) return;

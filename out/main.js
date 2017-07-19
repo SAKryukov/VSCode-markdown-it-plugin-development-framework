@@ -115,8 +115,6 @@ exports.activate = function (context) {
         });
     }; //generateConfiguration
 
-    const templateSet = semantic.getTemplateSet(path, fs, encoding);
-
     const getMdPath = function () {
         const extension = vscode.extensions.getExtension("Microsoft.vscode-markdown");
         if (!extension) return;
@@ -125,8 +123,8 @@ exports.activate = function (context) {
     }; //getMdPath
 
     const readConfiguration = function () {
-        //if (semantic.top().configuration)
-        //    return semantic.top().configuration;
+        if (semantic.top().configuration)
+            return semantic.top().configuration;
         const fileName = getConfigurationFileName(vscode.workspace.rootPath);
         if (!fs.existsSync(fileName)) {
             generateConfiguration();
@@ -135,7 +133,8 @@ exports.activate = function (context) {
         } //if
         const json = fs.readFileSync(fileName, encoding);
         try {
-            return semantic.normalizeConfigurationPaths(JSON.parse(jsonCommentStripper(json)));
+            semantic.top().configuration = semantic.normalizeConfigurationPaths(JSON.parse(jsonCommentStripper(json)));
+            return semantic.top().configuration; 
         } catch (ex) {
             vscode.window.showInformationMessage(util.format("Failed configuration parsing: %s", fileName));
         } //exception
