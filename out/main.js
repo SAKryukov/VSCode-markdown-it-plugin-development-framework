@@ -18,24 +18,6 @@ exports.activate = function (context) {
 
     semantic.top({ vscode: vscode, util: util, fs: fs, path: path, tmp: tmp, encoding: encoding });
 
-    const TextDocumentContentProvider = (function () {
-        function TextDocumentContentProvider() {
-            this.changeSourceHandler = new vscode.EventEmitter();
-        } //TextDocumentContentProvider
-        TextDocumentContentProvider.prototype.provideTextDocumentContent = function (uri) {
-            if (semantic.top().lastContent)
-                return semantic.top().lastContent;
-            semantic.top().lastContent = null;
-        }; //TextDocumentContentProvider.prototype.provideTextDocumentContent
-        Object.defineProperty(TextDocumentContentProvider.prototype, "onDidChange", {
-            get: function () { return this.changeSourceHandler.event; }, enumerable: true, configurable: true
-        });
-        TextDocumentContentProvider.prototype.update = function (uri) {
-            this.changeSourceHandler.fire(uri);
-        }; //TextDocumentContentProvider.prototype.update
-        return TextDocumentContentProvider;
-    }()); //TextDocumentContentProvider
-
     const getConfigurationFileName = function (rootPath) {
         if (!semantic.top().settings)
             semantic.top().settings = semantic.getSettings(semantic.top().importContext);
@@ -134,7 +116,7 @@ exports.activate = function (context) {
         const json = fs.readFileSync(fileName, encoding);
         try {
             semantic.top().configuration = semantic.normalizeConfigurationPaths(JSON.parse(jsonCommentStripper(json)));
-            return semantic.top().configuration; 
+            return semantic.top().configuration;
         } catch (ex) {
             vscode.window.showInformationMessage(util.format("Failed configuration parsing: %s", fileName));
         } //exception
@@ -171,7 +153,7 @@ exports.activate = function (context) {
         const debugConfiguration = testConfiguration(readConfiguration());
         if (!debugConfiguration) return;
         const debugHost = require("./debugHost");
-        semantic.top().importContext.top = semantic.top(); 
+        semantic.top().importContext.top = semantic.top();
         debugHost.start(
             semantic.top().importContext,
             debugConfiguration,
@@ -212,21 +194,14 @@ exports.activate = function (context) {
     }; //startDebugging
 
     context.subscriptions.push(
-        vscode.workspace.registerTextDocumentContentProvider(
-            semantic.top().previewAuthority,
-            new TextDocumentContentProvider()));
-
-    context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startWithoutDebugging", function () {
             startWithoutDebugging();
         })
     );
-
     context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.startDebugging", function () {
             startDebugging();
         }));
-
     context.subscriptions.push(
         vscode.commands.registerCommand("markdown.pluginDevelopment.generateDebugConfiguration", function () {
             generateConfiguration();

@@ -36,11 +36,11 @@ module.exports.top = function (importContext) {
     this.importContext.vscode.workspace.onDidChangeConfiguration(function (e) {
         self.settings = undefined;
         self.configuration = undefined;
-    }); 
+    });
     this.importContext.vscode.workspace.onDidSaveTextDocument(function (e) {
         self.settings = undefined;
         self.configuration = undefined;
-    }); 
+    });
     this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
     this.previewAuthority = "markdown-debug-preview";
     this.previewUri =
@@ -49,7 +49,6 @@ module.exports.top = function (importContext) {
                 "%s://authority/%s", this.previewAuthority,
                 this.previewAuthority));
     this.lastFiles = { content: undefined, fileName: undefined };
-    this.lastContent = undefined;
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
         if (!self.lastFiles.content) return;
         if (!self.lastFiles.fileName) return;
@@ -59,14 +58,13 @@ module.exports.top = function (importContext) {
         if (!self.importContext.fs.existsSync(self.lastFiles.content)) return;
         if (!self.importContext.fs.existsSync(self.lastFiles.fileName)) return;
         const lastName = self.importContext.fs.readFileSync(self.lastFiles.fileName, self.importContext.encoding);
-        self.lastContent = self.importContext.fs.readFileSync(self.lastFiles.content, self.importContext.encoding);
         self.lastFiles.content = null;
         self.lastFiles.fileName = null;
-        self.importContext.vscode.commands.executeCommand(
-            "vscode.previewHtml",
-            self.previewUri,
-            self.importContext.vscode.ViewColumn.One,
-            self.importContext.util.format(formatProcessed, self.importContext.path.basename(lastName)));
+        const fullPath = self.importContext.path.join(self.importContext.vscode.workspace.rootPath, lastName);
+        if (self.importContext.fs.existsSync(fullPath))
+            self.importContext.vscode.workspace.openTextDocument(fullPath, { preserveFocus: true }).then(function (doc) {
+                self.importContext.vscode.window.showTextDocument(doc);
+            });
     });
     return this;
 } //module.exports.top

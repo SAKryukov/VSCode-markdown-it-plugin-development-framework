@@ -78,12 +78,10 @@ module.exports.start = function (
         if (standAlong)
             console.log("Debugging complete");
     } else { // without debugging
-        importContext.top.lastContent = last.content;
-        importContext.vscode.commands.executeCommand(
-            "vscode.previewHtml",
-            importContext.top.previewUri,
-            importContext.vscode.ViewColumn.One,
-            importContext.util.format(formatProcessed, importContext.path.basename(last.fileName)));
+        if (importContext.fs.existsSync(last.fileName))
+            importContext.vscode.workspace.openTextDocument(last.fileName, { preserveFocus: true }).then(function (doc) {
+                importContext.vscode.window.showTextDocument(doc);
+            });
     } //if
 
 }; //module.exports.debugHost
