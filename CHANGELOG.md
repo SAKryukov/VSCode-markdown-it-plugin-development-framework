@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 2.0.1
+
+* Bug fix for the case debugSessionOptions.quitOnFirstRenderingFailure
+
 ## Version 2.0.0
 
 * Instead of HTML preview, HTML source is shown (optional)

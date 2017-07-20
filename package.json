@@ -1,123 +1,126 @@
 {
-    "name": "markdown-it-plugin-development-framework",
-    "displayName": "Markdown-it Plugin Development Framework",
-    "description": "Framework for development of node.js modules used as plug-ins for markdown-it module",
-    "version": "2.0.0",
-    "publisher": "sakryukov",
-    "author": {
-        "name": "Sergey A Kryukov",
-        "url": "http://www.SAKryukov.org"
-    },
-    "license": "MIT",
-    "icon": "images/logo.png",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/SAKryukov/vscode-markdown-it-plugin-development-framework.git"
-    },
-    "engines": {
-        "vscode": "^1.14.1"
-    },
-    "categories": [
-        "Other"
-    ],
-    "keywords": [
-        "markdown"
-    ],
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./out/main.js",
-    "contributes": {
-        "commands": [
-            {
-                "command": "markdown.pluginDevelopment.startWithoutDebugging",
-                "title": "Start Markdown Plug-in Without Debugging",
-                "icon": "./images/run.svg"
-            },
-            {
-                "command": "markdown.pluginDevelopment.startDebugging",
-                "title": "Start Markdown Plug-in Debugging",
-                "icon": "./images/run.svg"
-            },
-            {
-                "command": "markdown.pluginDevelopment.generateDebugConfiguration",
-                "title": "Create Markdown Extension Debug Configuration"
-            }
-        ],
-        "menus": {
-            "explorer/context": [
-                {
-                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
-                    "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.startDebugging",
-                    "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
-                    "group": "debug markdown"
-                }
-            ],
-            "editor/context": [
-                {
-                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
-                    "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.startDebugging",
-                    "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
-                    "group": "debug markdown"
-                }
-            ],
-            "editor/title": [
-                {
-                    "command": "markdown.pluginDevelopment.startDebugging",
-                    "group": "navigation"
-                }
-            ],
-            "editor/title/context": [
-                {
-                    "command": "markdown.pluginDevelopment.startWithoutDebugging",
-                    "group": "debug markdown"
-                },
-                {
-                    "command": "markdown.pluginDevelopment.generateDebugConfiguration",
-                    "group": "debug markdown"
-                }                
-            ]
-        },
-        "configuration": {
-            "type": "object",
-            "title": "Markdown-it plugin development framework configuration",
-            "properties": {
-                "markdown.extension.pluginDevelopment.debugConfigurationFileName": {
-                    "type": "string",
-                    "default": "markdown-it-debugging.settings.json"
-                }
-            }
-        },
-        "configurationDefaults": {
-            "[markdown]": {
-                "editor.codeLens": true,
-                "editor.folding": false,
-                "editor.lineNumbers": "off",
-                "editor.wordWrap": "on"
-            }
-        }
-    },
-    "dependencies": {
-        "vscode": "^1.14.1"
-    },
-    "extensionDependencies": [
-        "Microsoft.vscode-markdown"
-    ],
-    "__metadata": {
-        "id": "4161cde5-9dfa-4445-9258-13c05c39fd30",
-        "publisherId": "d1ee7a62-4a9b-4f51-94ff-cb9d0dc5a6c9",
-        "publisherDisplayName": "Sergey A Kryukov"
-    }
+	"name": "markdown-it-plugin-development-framework",
+	"displayName": "Markdown-it Plugin Development Framework",
+	"description": "Framework for development of node.js modules used as plug-ins for markdown-it module",
+	"version": "2.0.1",
+	"publisher": "sakryukov",
+	"author": {
+		"name": "Sergey A Kryukov",
+		"url": "http://www.SAKryukov.org"
+	},
+	"license": "MIT",
+	"icon": "images/logo.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/SAKryukov/vscode-markdown-it-plugin-development-framework.git"
+	},
+	"engines": {
+		"vscode": "^1.14.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"keywords": [
+		"markdown"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/main.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "markdown.pluginDevelopment.startWithoutDebugging",
+				"title": "Start Markdown Plug-in Without Debugging",
+				"icon": "./images/run.svg"
+			},
+			{
+				"command": "markdown.pluginDevelopment.startDebugging",
+				"title": "Start Markdown Plug-in Debugging",
+				"icon": "./images/run.svg"
+			},
+			{
+				"command": "markdown.pluginDevelopment.generateDebugConfiguration",
+				"title": "Create Markdown Extension Debug Configuration"
+			}
+		],
+		"menus": {
+			"explorer/context": [
+				{
+					"command": "markdown.pluginDevelopment.startWithoutDebugging",
+					"group": "debug markdown"
+				},
+				{
+					"command": "markdown.pluginDevelopment.startDebugging",
+					"group": "debug markdown"
+				},
+				{
+					"command": "markdown.pluginDevelopment.generateDebugConfiguration",
+					"group": "debug markdown"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "markdown.pluginDevelopment.startWithoutDebugging",
+					"group": "debug markdown"
+				},
+				{
+					"command": "markdown.pluginDevelopment.startDebugging",
+					"group": "debug markdown"
+				},
+				{
+					"command": "markdown.pluginDevelopment.generateDebugConfiguration",
+					"group": "debug markdown"
+				}
+			],
+			"editor/title": [
+				{
+					"command": "markdown.pluginDevelopment.startDebugging",
+					"group": "navigation"
+				}
+			],
+			"editor/title/context": [
+				{
+					"command": "markdown.pluginDevelopment.startWithoutDebugging",
+					"group": "debug markdown"
+				},
+				{
+					"command": "markdown.pluginDevelopment.generateDebugConfiguration",
+					"group": "debug markdown"
+				}
+			]
+		},
+		"configuration": {
+			"type": "object",
+			"title": "Markdown-it plugin development framework configuration",
+			"properties": {
+				"markdown.extension.pluginDevelopment.debugConfigurationFileName": {
+					"type": "string",
+					"default": "markdown-it-debugging.settings.json"
+				}
+			}
+		},
+		"configurationDefaults": {
+			"[markdown]": {
+				"editor.codeLens": true,
+				"editor.folding": false,
+				"editor.lineNumbers": "off",
+				"editor.wordWrap": "on"
+			}
+		}
+	},
+	"dependencies": {
+		"vscode": "^1.14.0"
+	},
+	"devDependencies": {
+		"vscode": "^1.14.0"
+	},
+	"extensionDependencies": [
+		"Microsoft.vscode-markdown"
+	],
+	"__metadata": {
+		"id": "a9e2e913-a7e2-43cf-a6c2-6c1164b8b43c",
+		"publisherId": "08f5729b-6adf-4168-bf9c-eb75a2f403fd",
+		"publisherDisplayName": "Sergey A Kryukov"
+	}
 }
