@@ -15,7 +15,8 @@ module.exports.start = function (
     if (!importContext)
         importContext = {
             path: require("path"),
-            fs: require("fs")
+            fs: require("fs"),
+            util: require("util")
         }
 
     if (standAlong)
@@ -46,6 +47,7 @@ module.exports.start = function (
     for (let index in debugConfiguration.testDataSet) {
         const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
         let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
+        console.log(importContext.util.format("Rendering complete: %s", inputFileName));
         if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
             const effectiveOutputPath = importContext.path.dirname(inputFileName);
             result = Utf8BOM + result;
@@ -54,9 +56,12 @@ module.exports.start = function (
                 importContext.path.basename(inputFileName,
                     importContext.path.extname(inputFileName))) + ".html";
             importContext.fs.writeFileSync(output, result);
+            console.log(importContext.util.format("Output written: %s", inputFileName));
             lastfileName = output;
         } //if
     } //loop
+
+    console.log("All input files rendered");
 
     if (!lastfileName)
         for (let index in debugConfiguration.testDataSet)
@@ -70,13 +75,14 @@ module.exports.start = function (
         };
         if (lastfileName && debugConfiguration.debugSessionOptions.showLastHTML)
             importContext.fs.writeFileSync(callbackFileNames.fileName, lastfileName);
-        if (standAlong)
-            console.log("Debugging complete");
     } else { // without debugging
         if (importContext.fs.existsSync(lastfileName))
             importContext.vscode.workspace.openTextDocument(lastfileName, { preserveFocus: true }).then(function (doc) {
                 importContext.vscode.window.showTextDocument(doc);
             });
     } //if
+
+    if (standAlong)
+        console.log("Debugging complete");
 
 }; //module.exports.debugHost
