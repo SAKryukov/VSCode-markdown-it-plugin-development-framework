@@ -15,16 +15,19 @@ module.exports.start = function (
         this.fileName = fileName;
         this.inner = inner;
         this.format = "Failure to load plug-in: %s";
+        this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
     function QuitOnFirstPluginActivationFailureException(fileName, inner) {
         this.fileName = fileName;
         this.inner = inner;
         this.format = "Failure to activate plug-in: %s";
+        this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
     function quitOnFirstRenderingFailureException(fileName, inner) {
         this.fileName = fileName;
         this.inner = inner;
         this.format = "Failure to render file: %s";
+        this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
     function logQuitException(ex) {
         if (ex.format && ex.fileName)
@@ -63,6 +66,10 @@ module.exports.start = function (
                 logQuitException(ex);
             else
                 console.error(ex.toString());
+            if (!standAlong)
+                importContext.vscode.window.showErrorMessage(
+                    importContext.util.format("Markdown test failed. For more detail, run under the debugger. %s",
+                        ex.toString()));
         } //exception
         console.log("Debugging complete");
     })();
@@ -77,11 +84,19 @@ module.exports.start = function (
                 try {
                     plugin = require(pluginPath);
                 } catch (exInner) {
-                    throw new QuitOnFirstPluginLoadFailureException(pluginPath, exInner);
+                    if (debugConfiguration.debugSessionOptions.quitOnFirstPluginLoadFailure)
+                        throw new QuitOnFirstPluginLoadFailureException(plugins[index].path, exInner);
+                    else {
+                        console.error(exInner.toString());
+                        continue;
+                    } //if
                 } //inner exception
                 md.use(plugin, plugins[index].options);
             } catch (ex) {
-                throw ex;
+                if (debugConfiguration.debugSessionOptions.quitOnFirstPluginActivationFailure)
+                    throw new QuitOnFirstPluginActivationFailureException(plugins[index].path, ex);
+                if (ex.constructor === QuitOnFirstPluginLoadFailureException)
+                    throw ex;
                 console.error(ex.toString());
             } //exception
         } //loop
@@ -89,21 +104,27 @@ module.exports.start = function (
 
     function renderAll() {
         let lastFileName = undefined;
+        let inputFileName;
         for (let index in debugConfiguration.testDataSet) {
-            const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
-            let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
-            console.log(importContext.util.format("Rendering complete: %s", inputFileName));
-            if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
-                const effectiveOutputPath = importContext.path.dirname(inputFileName);
-                result = Utf8BOM + result;
-                const output = importContext.path.join(
-                    effectiveOutputPath,
-                    importContext.path.basename(inputFileName,
-                        importContext.path.extname(inputFileName))) + ".html";
-                importContext.fs.writeFileSync(output, result);
-                console.log(importContext.util.format("Output written: %s", inputFileName));
-                lastFileName = output;
-            } //if
+            try {
+                inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
+                let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
+                console.log(importContext.util.format("Rendering complete: %s", inputFileName));
+                if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
+                    const effectiveOutputPath = importContext.path.dirname(inputFileName);
+                    result = Utf8BOM + result;
+                    const output = importContext.path.join(
+                        effectiveOutputPath,
+                        importContext.path.basename(inputFileName,
+                            importContext.path.extname(inputFileName))) + ".html";
+                    importContext.fs.writeFileSync(output, result);
+                    console.log(importContext.util.format("Output written: %s", inputFileName));
+                    lastFileName = output;
+                } //if
+            } catch (ex) {
+                if (debugConfiguration.debugSessionOptions.quitOnFirstRenderingFailure)
+                    throw new quitOnFirstRenderingFailureException(inputFileName, ex);
+            } //exception
         } //loop
         return lastFileName;
     } //render

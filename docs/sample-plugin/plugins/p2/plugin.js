@@ -1,5 +1,5 @@
 "use strict";
-//debugger;  // when debugger stops here, add regular breakpoints anywhere
+debugger;  // when debugger stops here, add regular breakpoints anywhere
 
 const defaultOptions = {
 }; //defaultOptions
