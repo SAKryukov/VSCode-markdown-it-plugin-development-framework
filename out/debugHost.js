@@ -104,10 +104,11 @@ module.exports.start = function (
 
     function renderAll() {
         let lastFileName = undefined;
-        let inputFileName;
+        let exceptionFileName;
         for (let index in debugConfiguration.testDataSet) {
             try {
-                inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
+                exceptionFileName = debugConfiguration.testDataSet[index];
+                const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
                 let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
                 console.log(importContext.util.format("Rendering complete: %s", inputFileName));
                 if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
@@ -123,7 +124,7 @@ module.exports.start = function (
                 } //if
             } catch (ex) {
                 if (debugConfiguration.debugSessionOptions.quitOnFirstRenderingFailure)
-                    throw new quitOnFirstRenderingFailureException(inputFileName, ex);
+                    throw new quitOnFirstRenderingFailureException(exceptionFileName, ex);
             } //exception
         } //loop
         return lastFileName;
