@@ -23,7 +23,7 @@ module.exports.start = function (
         this.format = "Failure to activate plug-in: %s";
         this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
-    function quitOnFirstRenderingFailureException(fileName, inner) {
+    function QuitOnFirstRenderingFailureException(fileName, inner) {
         this.fileName = fileName;
         this.inner = inner;
         this.format = "Failure to render file: %s";
@@ -124,7 +124,7 @@ module.exports.start = function (
                 } //if
             } catch (ex) {
                 if (debugConfiguration.debugSessionOptions.quitOnFirstRenderingFailure)
-                    throw new quitOnFirstRenderingFailureException(exceptionFileName, ex);
+                    throw new QuitOnFirstRenderingFailureException(exceptionFileName, ex);
             } //exception
         } //loop
         return lastFileName;
