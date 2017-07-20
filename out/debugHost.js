@@ -11,23 +11,23 @@ module.exports.start = function (
 
     const standAlong = !importContext;
 
-    function QuitOnFirstPluginLoadFailureException(fileName, inner) {
+    function OnFirstProblemException(fileName, inner) {
         this.fileName = fileName;
         this.inner = inner;
-        this.format = "Failure to load plug-in: %s";
+        this.format = "%s";
         this.toString = function () { if (inner) return inner.toString(); else return ""; }
+    } // OnFirstProblemException
+    function QuitOnFirstPluginLoadFailureException(fileName, inner) {
+        OnFirstProblemException.call(this, fileName, inner);
+        this.format = "Failure to load plug-in: %s";
     }
     function QuitOnFirstPluginActivationFailureException(fileName, inner) {
-        this.fileName = fileName;
-        this.inner = inner;
+        OnFirstProblemException.call(this, fileName, inner);
         this.format = "Failure to activate plug-in: %s";
-        this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
     function QuitOnFirstRenderingFailureException(fileName, inner) {
-        this.fileName = fileName;
-        this.inner = inner;
+        OnFirstProblemException.call(this, fileName, inner);
         this.format = "Failure to render file: %s";
-        this.toString = function () { if (inner) return inner.toString(); else return ""; }
     }
     function logQuitException(ex) {
         if (ex.format && ex.fileName)
