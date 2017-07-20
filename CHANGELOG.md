@@ -8,8 +8,6 @@
 * More detailed error diagnostics
 * Stability fixes
 
-* First production release
-
 ## Version 1.0.0
 
 * First production release
