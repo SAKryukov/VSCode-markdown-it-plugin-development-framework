@@ -15,7 +15,7 @@
 		"url": "https://github.com/SAKryukov/vscode-markdown-it-plugin-development-framework.git"
 	},
 	"engines": {
-		"vscode": "^1.14.0"
+		"vscode": "^1.14.1"
 	},
 	"categories": [
 		"Other"
@@ -110,10 +110,10 @@
 		}
 	},
 	"dependencies": {
-		"vscode": "^1.14.0"
+		"vscode": "^1.14.1"
 	},
 	"devDependencies": {
-		"vscode": "^1.14.0"
+		"vscode": "^1.14.1"
 	},
 	"extensionDependencies": [
 		"Microsoft.vscode-markdown"
