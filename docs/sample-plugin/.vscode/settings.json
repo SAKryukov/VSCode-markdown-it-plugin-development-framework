@@ -1,4 +1,3 @@
 {
     "markdown.extension.pluginDevelopment.debugConfigurationFileName": "markdown-it-debugging.settings.json",
-    "extensions.ignoreRecommendations": true // default
 }
