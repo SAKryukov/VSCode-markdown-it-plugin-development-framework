@@ -45,13 +45,7 @@ module.exports.top = function (importContext) {
         self.settings = undefined;
         self.configuration = undefined;
     });
-    this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-", postfix: ".tmp.js" });
-    this.previewAuthority = "markdown-debug-preview";
-    this.previewUri =
-        this.importContext.vscode.Uri.parse(
-            this.importContext.util.format(
-                "%s://authority/%s", this.previewAuthority,
-                this.previewAuthority));
+    this.tmpDir = this.importContext.tmp.dirSync({ unsafeCleanup: true, prefix: "vscode.markdown-debugging-" });
     this.lastFileName = undefined;
     this.importContext.fs.watch(this.tmpDir.name, function (event, fileName) {
         if (!self.lastFileName) return;
