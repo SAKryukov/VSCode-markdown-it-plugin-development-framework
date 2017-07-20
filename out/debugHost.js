@@ -8,9 +8,30 @@ module.exports.start = function (
     const encoding = "utf8";
     const Utf8BOM = "\ufeff";
     const formatProcessed = "Processed under debugger: \"%s\"";
-    const isString = function (o) { return typeof o == typeof ""; };
 
     const standAlong = !importContext;
+
+    function QuitOnFirstPluginLoadFailureException(fileName, inner) {
+        this.fileName = fileName;
+        this.inner = inner;
+        this.format = "Failure to load plug-in: %s";
+    }
+    function QuitOnFirstPluginActivationFailureException(fileName, inner) {
+        this.fileName = fileName;
+        this.inner = inner;
+        this.format = "Failure to activate plug-in: %s";
+    }
+    function quitOnFirstRenderingFailureException(fileName, inner) {
+        this.fileName = fileName;
+        this.inner = inner;
+        this.format = "Failure to render file: %s";
+    }
+    function logQuitException(ex) {
+        if (ex.format && ex.fileName)
+            console.error(importContext.util.format(ex.format, ex.fileName));
+        if (ex.inner)
+            console.error(ex.inner.toString());
+    } //logQuitException
 
     if (!importContext)
         importContext = {
@@ -27,62 +48,79 @@ module.exports.start = function (
     debugConfiguration.markdownItOptions.xhtmlOut = true;
     md.set(debugConfiguration.markdownItOptions);
 
-    const plugins = debugConfiguration.plugins;
-
-    for (let index in plugins) {
-        if (!plugins[index].enabled) continue;
+    (function () {
         try {
-            const pluginPath = importContext.path.join(rootPath, plugins[index].path);
-            const plugin = require(pluginPath);
-            md.use(plugin, plugins[index].options);
+            usePlugins();
+            if (debugConfiguration.testDataSet.length < 1) return;
+            const lastFileName = renderAll();
+            console.log("All input files rendered");
+            if (!lastFileName) return;
+            showResults(lastFileName);
         } catch (ex) {
-            console.error(ex.toString());
+            if ((ex.constructor === QuitOnFirstPluginLoadFailureException)
+                || (ex.constructor === QuitOnFirstPluginActivationFailureException)
+                || (ex.constructor == QuitOnFirstRenderingFailureException))
+                logQuitException(ex);
+            else
+                console.error(ex.toString());
         } //exception
-    } //loop
-
-    if (debugConfiguration.testDataSet.length < 1) return;
-
-    let lastfileName = undefined;
-
-    for (let index in debugConfiguration.testDataSet) {
-        const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
-        let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
-        console.log(importContext.util.format("Rendering complete: %s", inputFileName));
-        if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
-            const effectiveOutputPath = importContext.path.dirname(inputFileName);
-            result = Utf8BOM + result;
-            const output = importContext.path.join(
-                effectiveOutputPath,
-                importContext.path.basename(inputFileName,
-                    importContext.path.extname(inputFileName))) + ".html";
-            importContext.fs.writeFileSync(output, result);
-            console.log(importContext.util.format("Output written: %s", inputFileName));
-            lastfileName = output;
-        } //if
-    } //loop
-
-    console.log("All input files rendered");
-
-    if (!lastfileName)
-        for (let index in debugConfiguration.testDataSet)
-            lastfileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
-    if (!lastfileName) return;
-    if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
-
-    if (standAlong) { // under the debugger
-        const callbackFileNames = {
-            fileName: callbackFileNameContentFileName
-        };
-        if (lastfileName && debugConfiguration.debugSessionOptions.showLastHTML)
-            importContext.fs.writeFileSync(callbackFileNames.fileName, lastfileName);
-    } else { // without debugging
-        if (importContext.fs.existsSync(lastfileName))
-            importContext.vscode.workspace.openTextDocument(lastfileName, { preserveFocus: true }).then(function (doc) {
-                importContext.vscode.window.showTextDocument(doc);
-            });
-    } //if
-
-    if (standAlong)
         console.log("Debugging complete");
+    })();
+
+    function usePlugins() {
+        const plugins = debugConfiguration.plugins;
+        for (let index in plugins) {
+            if (!plugins[index].enabled) continue;
+            try {
+                const pluginPath = importContext.path.join(rootPath, plugins[index].path);
+                let plugin;
+                try {
+                    plugin = require(pluginPath);
+                } catch (exInner) {
+                    throw new QuitOnFirstPluginLoadFailureException(pluginPath, exInner);
+                } //inner exception
+                md.use(plugin, plugins[index].options);
+            } catch (ex) {
+                throw ex;
+                console.error(ex.toString());
+            } //exception
+        } //loop
+    } //usePlugins
+
+    function renderAll() {
+        let lastFileName = undefined;
+        for (let index in debugConfiguration.testDataSet) {
+            const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
+            let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
+            console.log(importContext.util.format("Rendering complete: %s", inputFileName));
+            if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
+                const effectiveOutputPath = importContext.path.dirname(inputFileName);
+                result = Utf8BOM + result;
+                const output = importContext.path.join(
+                    effectiveOutputPath,
+                    importContext.path.basename(inputFileName,
+                        importContext.path.extname(inputFileName))) + ".html";
+                importContext.fs.writeFileSync(output, result);
+                console.log(importContext.util.format("Output written: %s", inputFileName));
+                lastFileName = output;
+            } //if
+        } //loop
+        return lastFileName;
+    } //render
+
+    function showResults(lastFileName) {
+        if (standAlong) { // under the debugger
+            const callbackFileNames = {
+                fileName: callbackFileNameContentFileName
+            };
+            if (lastFileName && debugConfiguration.debugSessionOptions.showLastHTML)
+                importContext.fs.writeFileSync(callbackFileNames.fileName, lastFileName);
+        } else { // without debugging
+            if (importContext.fs.existsSync(lastFileName))
+                importContext.vscode.workspace.openTextDocument(lastFileName, { preserveFocus: true }).then(function (doc) {
+                    importContext.vscode.window.showTextDocument(doc);
+                });
+        } //if
+    } //showResults
 
 }; //module.exports.debugHost

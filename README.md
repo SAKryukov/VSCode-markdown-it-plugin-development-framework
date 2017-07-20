@@ -57,6 +57,9 @@ Here is a self-explaining example of "markdown-it-debugging.settings":
     "debugSessionOptions": {
         "saveHtmlFiles": true,
         "showLastHTML": true // if saveHtmlFiles is enabled
+        "quitOnFirstPluginLoadFailure": false,
+        "quitOnFirstPluginActivationFailure": false,
+        "quitOnFirstRenderingFailure": true
     }
 }
 ```

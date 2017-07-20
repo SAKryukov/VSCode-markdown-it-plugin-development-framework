@@ -67,7 +67,10 @@ exports.activate = function (context) {
             testDataSet: [],
             debugSessionOptions: {
                 saveHtmlFiles: true,
-                showLastHTML: true
+                showLastHTML: true,
+                quitOnFirstPluginLoadFailure: false,
+                quitOnFirstPluginActivationFailure: false,
+                quitOnFirstRenderingFailure: true
             }
         }; //defaultConfiguration
         const rootPath = vscode.workspace.rootPath;
