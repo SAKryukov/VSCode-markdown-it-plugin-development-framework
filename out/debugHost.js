@@ -142,7 +142,6 @@ module.exports.start = function (
             if (importContext.fs.existsSync(lastFileName))
                 importContext.vscode.workspace.openTextDocument(lastFileName, { preserveFocus: true }).then(function (doc) {
                     importContext.vscode.window.showTextDocument(doc);
-                    importContext.vscode.commands.executeCommand("editor.action.formatDocument");
                 });
         } //if
     } //showResults
