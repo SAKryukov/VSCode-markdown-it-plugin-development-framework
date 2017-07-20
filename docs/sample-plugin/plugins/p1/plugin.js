@@ -5,5 +5,6 @@ const defaultOptions = {
 }; //defaultOptions
 
 module.exports = function (md, userOptions) {
+    //throw "wrong plug-in!";
     console.log("Markdown-it plugin #1 does something");
 }; //module.exports
