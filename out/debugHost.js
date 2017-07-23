@@ -52,14 +52,15 @@ module.exports.start = function (
     md.set(debugConfiguration.markdownItOptions);
 
     (function () {
+        let problems;
         try {
             usePlugins();
             if (debugConfiguration.testDataSet.length < 1) return;
-            const lastFileName = renderAll();
+            const renderingResult = renderAll();
             console.log("All input files rendered");
-            if (!lastFileName) return;
-            showResults(lastFileName);
+            showResults(renderingResult);
         } catch (ex) {
+            problems = true;
             if ((ex.constructor === QuitOnFirstPluginLoadFailureException)
                 || (ex.constructor === QuitOnFirstPluginActivationFailureException)
                 || (ex.constructor == QuitOnFirstRenderingFailureException))
@@ -71,7 +72,10 @@ module.exports.start = function (
                     importContext.util.format("Markdown test failed. For more detail, run under the debugger. %s",
                         ex.toString()));
         } //exception
-        console.log("Debugging complete");
+        if (problems)
+            console.error("Debugging session complete with issues");
+        else
+            console.log("Debugging session complete");
     })();
 
     function usePlugins() {
@@ -105,16 +109,17 @@ module.exports.start = function (
 
     function renderAll() {
         let lastFileName = undefined;
+        let lastContent = undefined;
         let exceptionFileName;
         for (let index in debugConfiguration.testDataSet) {
             try {
                 exceptionFileName = debugConfiguration.testDataSet[index];
                 const inputFileName = importContext.path.join(rootPath, debugConfiguration.testDataSet[index]);
-                let result = md.render(importContext.fs.readFileSync(inputFileName, encoding));
+                const result = Utf8BOM + md.render(importContext.fs.readFileSync(inputFileName, encoding));
+                lastContent = result;
                 console.log(importContext.util.format("Rendering complete: %s", inputFileName));
                 if (debugConfiguration.debugSessionOptions.saveHtmlFiles) {
                     const effectiveOutputPath = importContext.path.dirname(inputFileName);
-                    result = Utf8BOM + result;
                     const output = importContext.path.join(
                         effectiveOutputPath,
                         importContext.path.basename(inputFileName,
@@ -128,19 +133,27 @@ module.exports.start = function (
                     throw new QuitOnFirstRenderingFailureException(exceptionFileName, ex);
             } //exception
         } //loop
-        return lastFileName;
+        return { lastFileName: lastFileName, lastContent: lastContent };
     } //render
 
-    function showResults(lastFileName) {
+    function showResults(renderingResult) {
         if (standAlong) { // under the debugger
+            if (!renderingResult.lastFileName)
+                return;
             const callbackFileNames = {
                 fileName: callbackFileNameContentFileName
             };
-            if (lastFileName && debugConfiguration.debugSessionOptions.showLastHTML)
-                importContext.fs.writeFileSync(callbackFileNames.fileName, lastFileName);
+            if (renderingResult.lastFileName && debugConfiguration.debugSessionOptions.showLastHTML)
+                importContext.fs.writeFileSync(callbackFileNames.fileName, renderingResult.lastFileName);
         } else { // without debugging
-            if (importContext.fs.existsSync(lastFileName))
-                importContext.vscode.workspace.openTextDocument(lastFileName).then(function (doc) {
+            if (!renderingResult.lastFileName && !renderingResult.lastContent) return;
+            if (renderingResult.lastFileName) {
+                if (importContext.fs.existsSync(renderingResult.lastFileName))
+                    importContext.vscode.workspace.openTextDocument(renderingResult.lastFileName).then(function (doc) {
+                        importContext.vscode.window.showTextDocument(doc);
+                    });
+            } else
+                importContext.vscode.workspace.openTextDocument({ content: renderingResult.lastContent, language: "html" }).then(function (doc) {
                     importContext.vscode.window.showTextDocument(doc);
                 });
         } //if
