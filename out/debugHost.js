@@ -140,7 +140,7 @@ module.exports.start = function (
                 importContext.fs.writeFileSync(callbackFileNames.fileName, lastFileName);
         } else { // without debugging
             if (importContext.fs.existsSync(lastFileName))
-                importContext.vscode.workspace.openTextDocument(lastFileName, { preserveFocus: true }).then(function (doc) {
+                importContext.vscode.workspace.openTextDocument(lastFileName).then(function (doc) {
                     importContext.vscode.window.showTextDocument(doc);
                 });
         } //if

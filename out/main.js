@@ -166,10 +166,6 @@ exports.activate = function (context) {
     }; //startWithoutDebugging
 
     const startDebugging = function () {
-
-
-
-        return;
         const pathToMd = getMdPath();
         if (!pathToMd) return;
         const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);

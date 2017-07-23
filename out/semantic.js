@@ -55,7 +55,7 @@ module.exports.top = function (importContext) {
         const lastName = self.importContext.fs.readFileSync(self.lastFileName, self.importContext.encoding);
         self.lastFileName = null;
         if (self.importContext.fs.existsSync(lastName))
-            self.importContext.vscode.workspace.openTextDocument(lastName, { preserveFocus: true }).then(function (doc) {
+            self.importContext.vscode.workspace.openTextDocument(lastName).then(function (doc) {
                 self.importContext.vscode.window.showTextDocument(doc);
             });
     });
