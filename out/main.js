@@ -147,7 +147,7 @@ exports.activate = function (context) {
         for (let index in configuration.testDataSet) {
             if (!fs.existsSync(path.join(rootPath, configuration.testDataSet[index])))
                 vscode.window.showWarningMessage(
-                    util.format("Test Mardown file \"%s\" not found", configuration.testDataSet[index]));
+                    util.format("Test Markdown file \"%s\" not found", configuration.testDataSet[index]));
         } //loop testDataSet
         return configuration;
     } //testConfiguration
@@ -166,6 +166,10 @@ exports.activate = function (context) {
     }; //startWithoutDebugging
 
     const startDebugging = function () {
+
+
+
+        return;
         const pathToMd = getMdPath();
         if (!pathToMd) return;
         const rootPath = semantic.unifyFileString(vscode.workspace.rootPath);
