@@ -1,5 +1,9 @@
 # Changelog
 
+## Version 3.0.1
+
+* Improved handling of HTML rendering results and logs
+
 ## Version 3.0.0
 
 * Fixed critical bug: "Start Markdown Plug-in Without Debugging" command did not respond to changed plug-in code because of caching. Cache is now deleted before loading of the plug-in module.
