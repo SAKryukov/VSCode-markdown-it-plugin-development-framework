@@ -1,5 +1,11 @@
 # Changelog
 
+## Version 4.0.0
+
+* Versions prior to 4.*.* are deprecated, because they use deprecated way of node.js starting debugging (temporary API). New version uses `vscode.debug.startDebugging` introduced with VSCode 1.15.0. Older versions of this extension still work with VSCode 1.15.0, but may appear defunct with later VSCode versions.
+
+* Functionally, this version is equivalent to Version 3.0.1, which can be used with VSCode versions 1.14.*.
+
 ## Version 3.0.1
 
 * Improved handling of HTML rendering results and logs

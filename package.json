@@ -2,7 +2,7 @@
 	"name": "markdown-it-plugin-development-framework",
 	"displayName": "Markdown-it Plugin Development Framework",
 	"description": "Framework for development of node.js modules used as plug-ins for markdown-it module",
-	"version": "3.0.1",
+	"version": "4.0.0",
 	"publisher": "sakryukov",
 	"author": {
 		"name": "Sergey A Kryukov",
@@ -15,7 +15,7 @@
 		"url": "https://github.com/SAKryukov/vscode-markdown-it-plugin-development-framework.git"
 	},
 	"engines": {
-		"vscode": ">=1.14.1"
+		"vscode": ">=1.15.0"
 	},
 	"categories": [
 		"Other"

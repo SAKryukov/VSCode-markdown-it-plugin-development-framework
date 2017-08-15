@@ -180,8 +180,8 @@ exports.activate = function (context) {
         code += util.format("host.start(\n\tnull, \n\t'%s', \n\t\"%s\", \n\t\"%s\", \n\t\"%s\");",
             debugConfigurationString, pathToMd, rootPath, lastFileFileName);
         const launchConfiguration = {
-            type: "node2", // a real confusion! found by tracing Visual Studio Code
-            name: "Launch Extension",
+            type: "node",
+            name: "Launch Program",
             request: "launch",
             stopOnEntry: false,
             protocol: "auto"
@@ -189,7 +189,7 @@ exports.activate = function (context) {
         const programName = path.join(dirName, "driver.js");
         launchConfiguration.program = programName;
         fs.writeFileSync(launchConfiguration.program, code);
-        vscode.commands.executeCommand("vscode.startDebug", launchConfiguration);
+        vscode.debug.startDebugging(undefined, launchConfiguration);
         // preview:
         if (!debugConfiguration.debugSessionOptions.showLastHTML) return;
         semantic.top().lastFileName = lastFileFileName;
